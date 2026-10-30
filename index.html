@@ -16,8 +16,8 @@
 
     <header>
         <img src="assests/logo.svg" alt="Logomarca do aplicativo habits">
-        <button>
-            <img src="assests/plus.svg" alt="íncone sinal de mais roxo"> 
+        <button type="button" id="register-day">
+            <img src="assests/plus.svg" alt="ícone sinal de mais roxo">
             <div>
                 Registrar o meu dia
             </div>
@@ -25,22 +25,48 @@
     </header>
 
     <form id="form-habits">
-        <div class="habits">
-            <div class="habit" data-name="run">&#127939;</div>
-            <div class="habit" data-name="water">&#128167;</div>
-            <div class="habit" data-name="food">&#127822;</div>
-            <div class="habit" data-name="journal">&#128218;</div>
-            <div class="habit" data-name="takePills">&#128138;</div>
+        <div class="habits-column">
+            <ul class="habits"></ul>
+            <div class="habits-actions"></div>
         </div>
 
         <div class="days">
         </div>
-
-
-        
     </form>
 
-    <script src="https://cdn.jsdelivr.net/gh/maykbrito/libs/NLWSetup/source/NLWSetup.js"></script>
+    <dialog id="habit-dialog" aria-labelledby="habit-dialog-title">
+        <form id="habit-form">
+            <h2 id="habit-dialog-title">Novo hábito</h2>
+
+            <label for="habit-name">Nome</label>
+            <input type="text" id="habit-name" maxlength="30" autocomplete="off" aria-describedby="habit-name-count">
+            <small id="habit-name-count" class="dialog-hint">0/30</small>
+
+            <label for="habit-emoji">Emoji (opcional)</label>
+            <input type="text" id="habit-emoji" autocomplete="off" placeholder="Ex.: 🧘">
+
+            <p id="habit-error" class="dialog-error" role="alert"></p>
+            <button type="button" id="habit-restore" hidden>Restaurar o arquivado</button>
+
+            <div class="dialog-actions">
+                <button type="button" id="habit-archive" hidden>Arquivar</button>
+                <button type="button" id="habit-cancel">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="archived-dialog" aria-labelledby="archived-dialog-title">
+        <h2 id="archived-dialog-title">Hábitos arquivados</h2>
+        <p id="archived-limit" class="dialog-hint" hidden>
+            Limite de 10 hábitos ativos atingido. Arquive um hábito para restaurar outro.
+        </p>
+        <ul id="archived-list"></ul>
+        <div class="dialog-actions">
+            <button type="button" id="archived-close">Fechar</button>
+        </div>
+    </dialog>
+
     <script src="script.js"></script>
 
 </body>
