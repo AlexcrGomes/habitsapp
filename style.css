@@ -33,8 +33,8 @@ button {
     font-family: 'inter';
     font-weight: 600;
     font-size: 16px;
-    font-weight: 125%;
-
+    line-height: 125%;
+    cursor: pointer;
 }
 
 #form-habits {
@@ -47,16 +47,206 @@ button {
     display: flex;
     flex-direction: column;
     gap: 24px;
-    margin-top: 60px;
+    margin-top: 57px;
+    list-style: none;
 }
 
 .habit {
-    width: 64px;
     height: 64px;
-    font-size: 32px;
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+.habit-symbol {
+    width: 48px;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    text-align: center;
+}
+
+.habit-name {
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #A1A1AA;
+}
+
+.habit button {
+    padding: 0;
+    width: 28px;
+    height: 28px;
     justify-content: center;
+    border: none;
+    border-radius: 6px;
+    color: #A1A1AA;
+    font-size: 16px;
+}
+
+.habit button:hover:not(:disabled) {
+    background-color: #27272A;
+    color: white;
+}
+
+.habit-handle {
+    padding: 4px;
+    color: #52525B;
+    font-size: 20px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.habit-move {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+}
+
+.habit.dragging {
+    position: relative;
+    z-index: 1;
+    background-color: #18181B;
+    border-radius: 8px;
+    opacity: 0.9;
+}
+
+.habit.dragging .habit-handle {
+    cursor: grabbing;
+}
+
+.habit.drop-before {
+    box-shadow: 0 -12px 0 -10px #8B5CF6;
+}
+
+.habit.drop-after {
+    box-shadow: 0 12px 0 -10px #8B5CF6;
+}
+
+.habits-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.habits-actions button,
+dialog button {
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.habits-empty {
+    font-family: 'Inter', sans-serif;
+    color: #A1A1AA;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.primary {
+    background-color: #8B5CF6;
+}
+
+button.danger {
+    border-color: #F87171;
+}
+
+:focus-visible {
+    outline: 2px solid #A78BFA;
+    outline-offset: 2px;
+}
+
+dialog {
+    margin: auto;
+    width: min(440px, calc(100% - 32px));
+    padding: 24px;
+    border: 1px solid #27272A;
+    border-radius: 12px;
+    background-color: #18181B;
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
+
+dialog::backdrop {
+    background-color: rgb(0 0 0 / 0.7);
+}
+
+dialog h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+dialog label {
+    display: block;
+    margin: 16px 0 6px;
+    font-size: 14px;
+    color: #A1A1AA;
+}
+
+dialog input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #27272A;
+    border-radius: 8px;
+    background-color: #09090A;
+    color: white;
+    font-size: 16px;
+}
+
+.dialog-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #A1A1AA;
+}
+
+.dialog-error {
+    min-height: 20px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #F87171;
+}
+
+.dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+#habit-archive {
+    margin-right: auto;
+}
+
+#archived-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+}
+
+.archived-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.archived-item .habit-name {
+    flex: 1;
+}
+
+.archived-empty {
+    color: #A1A1AA;
 }
 
 .days {
@@ -81,7 +271,7 @@ button {
     text-align: center;
 }
 
-input {
+input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
     width: 64px;
@@ -93,7 +283,7 @@ input {
 }
 
 /*pseudo-seletor*/
-input:checked {
+input[type="checkbox"]:checked {
     background: #8B5CF6;
     border: 2px solid #A78BFA;
 }
@@ -102,5 +292,9 @@ input:checked {
 @media (max-width: 570px) {
     button div {
         display: none;
+    }
+
+    .habit-name {
+        max-width: 72px;
     }
 }

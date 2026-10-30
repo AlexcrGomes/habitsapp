@@ -35,5 +35,13 @@ O Habits é um app para ajudar a rastrear os hábitos.
 
 Você pode visualizar o layout do projeto através [DESSE LINK](https://www.figma.com/community/file/1195327109778210238). É necessário ter conta no [Figma](https://figma.com) para acessá-lo.
 
+## 🧭 Desenvolvimento (Spec Driven)
+
+Este projeto segue **Spec Driven Development** no formato do GitHub Spec Kit: toda feature começa por uma especificação aprovada.
+
+- [Guia do processo](docs/sdd-guia.md)
+- [Constituição do projeto](.specify/memory/constitution.md)
+- [Especificações das features](specs/)
+
 
 ---
