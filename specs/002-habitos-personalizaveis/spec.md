@@ -65,6 +65,9 @@ da versão atual.
 
 ### História 3 — Manter os dias registrados mesmo sem marcações (Prioridade: P1)
 
+> **Substituída pela [spec 004](../004-calendario-semanal/spec.md)** (junto com o RF-013):
+> não existe mais lista de dias registrados; todos os dias da semana aparecem automaticamente.
+
 Como usuário, quero que um dia registrado continue aparecendo mesmo que eu ainda não tenha
 marcado nenhum hábito nele. (Corrige o débito **D-01** da spec 001.)
 

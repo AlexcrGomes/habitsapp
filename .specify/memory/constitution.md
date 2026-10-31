@@ -1,6 +1,6 @@
 # Constituição do Projeto Habits
 
-**Versão**: 1.0.0 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-10-30
+**Versão**: 1.1.0 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-10-31
 
 Esta constituição define os princípios não negociáveis do projeto. Toda spec, plano e
 implementação deve estar em conformidade com ela. Em caso de conflito entre um documento
@@ -39,12 +39,15 @@ O app é HTML, CSS e JavaScript puro, aberto diretamente no navegador.
 
 ### III. Dados locais e compatíveis
 
-Os dados do usuário ficam no `localStorage`, na chave `NLWSetup@habits`.
+Os dados do usuário ficam no `localStorage`, na chave vigente indicada em **Restrições
+técnicas**.
 
 - Nenhuma mudança pode fazer o usuário perder dados já gravados.
 - Qualquer alteração de chave ou formato exige uma **migração** descrita no `plan.md`
   (leitura do formato antigo → conversão → gravação no novo) e um cenário de verificação
   com dados pré-existentes.
+- A migração grava em uma **nova chave**; as chaves anteriores nunca são apagadas nem
+  sobrescritas, e ficam como cópia de segurança.
 - Nenhum dado é enviado para servidores externos.
 
 **Por quê**: o histórico de hábitos é o único ativo do usuário; não existe backup em
@@ -89,8 +92,8 @@ Como o projeto não possui framework de testes automatizados:
 | Item | Valor atual |
 |------|-------------|
 | Linguagens | HTML5, CSS3, JavaScript (ES6+, sem módulos) |
-| Biblioteca | `NLWSetup` via CDN jsDelivr (`index.html`) |
-| Persistência | `localStorage` — chave `NLWSetup@habits` |
+| Bibliotecas | Nenhuma (a `NLWSetup` foi removida na spec 002) |
+| Persistência | `localStorage` — chave vigente `habits@v3`; anteriores `habits@v2` e `NLWSetup@habits` (só leitura, na migração) |
 | Fontes | Google Fonts: Inter 600, Roboto Mono 700 |
 | Execução | Abrir `index.html` no navegador (ou servidor estático) |
 | Hospedagem | Estática (GitHub Pages) |
@@ -113,3 +116,4 @@ Como o projeto não possui framework de testes automatizados:
 | Versão | Data | Mudança |
 |--------|------|---------|
 | 1.0.0 | 2026-10-30 | Versão inicial |
+| 1.1.0 | 2026-10-31 | Princípio III: chave vigente movida para Restrições técnicas e regra de nunca apagar/sobrescrever chaves antigas; restrições técnicas atualizadas (sem NLWSetup, chave `habits@v3`) |

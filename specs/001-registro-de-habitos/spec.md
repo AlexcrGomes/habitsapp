@@ -15,6 +15,9 @@
 
 ### História 1 — Registrar o dia atual (Prioridade: P1)
 
+> **Substituída pela [spec 004](../004-calendario-semanal/spec.md)**: a semana aparece
+> automaticamente e o botão "Registrar o meu dia" foi removido.
+
 Como usuário, quero registrar o dia de hoje para poder marcar os hábitos que cumpri.
 
 **Por que esta prioridade**: sem um dia registrado não há onde marcar hábitos.
@@ -136,7 +139,7 @@ Registrados para correção futura; **não** fazem parte do comportamento deseja
 | ID | Débito | Onde | Impacto | Situação |
 |----|--------|------|---------|----------|
 | D-01 | Só as marcações são salvas; um dia sem nenhum hábito marcado não persiste e some ao recarregar | `script.js:21-23` + biblioteca NLWSetup | Usuário perde dias registrados | ✅ Resolvido na [002](../002-habitos-personalizaveis/spec.md) |
-| D-02 | A data é guardada sem ano (`MM-DD`) | `script.js:9`, NLWSetup | Colisão entre anos; impede estatísticas de longo prazo | Aberto |
+| D-02 | A data é guardada sem ano (`MM-DD`) | `script.js:9`, NLWSetup | Colisão entre anos; impede estatísticas de longo prazo | ✅ Resolvido na [004](../004-calendario-semanal/spec.md) |
 | D-03 | Texto com erros: "Adiconado com suceso" | `script.js:17` | Princípio IV | ✅ Resolvido na 002 |
 | D-04 | `alt` com erro: "íncone sinal de mais roxo" | `index.html:20` | Princípio IV | ✅ Resolvido na 002 |
 | D-05 | Pasta de imagens chamada `assests/` | `assests/` | Clareza (renomear exige atualizar referências) | Aberto |

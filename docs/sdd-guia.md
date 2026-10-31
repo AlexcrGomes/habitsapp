@@ -28,6 +28,7 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 001 | [Registro de hábitos](../specs/001-registro-de-habitos/spec.md) | Implementada (retroativa) |
 | 002 | [Hábitos personalizáveis](../specs/002-habitos-personalizaveis/spec.md) | Aprovada — implementada, falta verificar V-29 e V-33 |
 | 003 | [Estatísticas e streaks](../specs/003-estatisticas-streaks/spec.md) | Rascunho |
+| 004 | [Semana automática com registro retroativo](../specs/004-calendario-semanal/spec.md) | Implementada |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
 

@@ -40,28 +40,21 @@
 *Suíte de regressão do app. Execute em uma janela anônima (localStorage limpo) e depois
 com dados existentes.*
 
-### Primeiro uso
-- [ ] **R-01** Abrir `index.html` com localStorage limpo: aparecem os 5 emojis e nenhum dia.
+> Atualizado pelas specs 002 e 004: não existe mais "Registrar o meu dia" (R-02, R-03 e
+> R-11 foram retirados); a semana aparece automaticamente e os dados ficam em `habits@v3`.
 
-### Registrar dia (US1)
-- [ ] **R-02** Clicar em "Registrar o meu dia": alerta de sucesso e coluna com a data de hoje (DD/MM).
-- [ ] **R-03** Clicar de novo: alerta "Dia já incluso" e nenhuma coluna nova.
+### Primeiro uso
+- [ ] **R-01** Abrir `index.html` com localStorage limpo: lista de hábitos vazia e as 7 colunas da semana atual.
 
 ### Marcar hábitos (US2)
-- [ ] **R-04** Clicar em um quadrado: fica roxo.
+- [ ] **R-04** Clicar em um quadrado de hoje: fica roxo.
 - [ ] **R-05** Clicar de novo: volta a ficar vazio.
 
 ### Persistência (US3)
-- [ ] **R-06** Marcar 2 hábitos e recarregar: dia e marcações continuam.
-- [ ] **R-07** No DevTools, `localStorage.getItem("habits@v2")` contém as datas marcadas no formato `MM-DD`.
-- [ ] **R-08** Com dados de vários dias, as colunas aparecem em ordem cronológica.
+- [ ] **R-06** Marcar 2 hábitos e recarregar: marcações continuam.
+- [ ] **R-07** No DevTools, `localStorage.getItem("habits@v3")` contém as datas marcadas no formato `YYYY-MM-DD`.
+- [ ] **R-08** As colunas aparecem em ordem cronológica.
 
 ### Responsivo (US4)
-- [ ] **R-09** Em largura ≤570px, o botão mostra só o ícone "+".
-- [ ] **R-10** Com muitos dias, é possível rolar horizontalmente.
-
-### Dias sem marcação (D-01, resolvido na 002)
-- [ ] **R-11** Registrar o dia sem marcar nada e recarregar: o dia continua na tela.
-
-> Desde a spec 002, a chave de dados é `habits@v2` (R-07); `NLWSetup@habits` só é lida na
-> migração.
+- [ ] **R-09** Em largura ≤570px, cabeçalho e navegação não cobrem a grade.
+- [ ] **R-10** Quando as colunas não cabem, a grade de dias rola na horizontal e os nomes dos hábitos continuam visíveis.

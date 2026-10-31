@@ -16,12 +16,18 @@
 
     <header>
         <img src="assests/logo.svg" alt="Logomarca do aplicativo habits">
-        <button type="button" id="register-day">
-            <img src="assests/plus.svg" alt="ícone sinal de mais roxo">
-            <div>
-                Registrar o meu dia
+        <nav class="week-nav" aria-label="Navegação entre semanas">
+            <div class="week-arrows">
+                <button type="button" id="week-previous" aria-label="Semana anterior">‹</button>
+                <span id="week-period" aria-live="polite"></span>
+                <button type="button" id="week-next" aria-label="Próxima semana">›</button>
             </div>
-        </button>
+            <fieldset class="week-mode">
+                <legend class="visually-hidden">Dias exibidos</legend>
+                <label><input type="radio" name="week-mode" value="rolling"> Últimos 7 dias</label>
+                <label><input type="radio" name="week-mode" value="calendar"> Dom–Sáb</label>
+            </fieldset>
+        </nav>
     </header>
 
     <form id="form-habits">

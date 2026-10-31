@@ -132,10 +132,10 @@ Como usuário, quero saber com que frequência cumpro cada hábito.
 
 ## Dependências e premissas
 
-- **Bloqueante**: débito **D-02** (data sem ano) da
-  [spec 001](../001-registro-de-habitos/spec.md#débitos-conhecidos). Sem o ano, sequências
-  e percentuais ficam incorretos na virada do ano. Decidir se esta feature corrige o
-  débito ou se ele vira uma spec própria antes desta.
+- ~~**Bloqueante**: débito **D-02** (data sem ano)~~ — **resolvido** pela
+  [spec 004](../004-calendario-semanal/spec.md): as datas agora têm ano. Com a 004, também
+  não existe mais "dia registrado": todos os dias aparecem automaticamente, o que muda a
+  pergunta sobre streak (dias corridos x dias registrados).
 - Recomendado implementar após [002-habitos-personalizaveis](../002-habitos-personalizaveis/spec.md),
   para que as estatísticas já considerem hábitos dinâmicos.
 - Afetada pelo débito **D-01** (dias sem marcação não persistem).
@@ -150,7 +150,7 @@ Como usuário, quero saber com que frequência cumpro cada hábito.
 - [x] Critérios de sucesso mensuráveis
 - [x] Dados existentes considerados (RC-001)
 - [ ] Nenhuma marcação `[NEEDS CLARIFICATION]` pendente
-- [ ] Dependências bloqueantes resolvidas (D-02)
+- [x] Dependências bloqueantes resolvidas (D-02, pela spec 004)
 - [ ] Conforme a [constituição](../../.specify/memory/constitution.md)
 
 ## Clarificações

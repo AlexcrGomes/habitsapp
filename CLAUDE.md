@@ -1,9 +1,10 @@
 # CLAUDE.md — Habits
 
-App estático de rastreamento de hábitos: HTML + CSS + JavaScript puro, sem build e sem
-testes automatizados. A biblioteca `NLWSetup` (CDN) monta a grade de dias × hábitos; os
-dados ficam no `localStorage`, chave `NLWSetup@habits`. Para rodar, abra `index.html` no
-navegador.
+App estático de rastreamento de hábitos: HTML + CSS + JavaScript puro, sem build, sem
+dependências e sem testes automatizados. O `script.js` monta a grade de hábitos × semana
+(calculada a partir da data atual); os dados ficam no `localStorage`, chave `habits@v3`.
+Para rodar, abra `index.html` no navegador ou use o servidor de `.claude/launch.json`
+(porta 5500).
 
 ## Metodologia: Spec Driven Development (GitHub Spec Kit)
 
@@ -33,8 +34,9 @@ Este repositório segue SDD. Guia completo: [`docs/sdd-guia.md`](docs/sdd-guia.m
 8. Antes de marcar a spec como **Implementada**, execute o checklist de verificação da
    feature **e** o de regressão de `specs/001-registro-de-habitos/tasks.md`.
 9. Mantenha atualizada a tabela "Specs existentes" em `docs/sdd-guia.md`.
-10. Nunca quebre os dados salvos em `NLWSetup@habits`; mudança de formato exige migração
-    descrita no plan.
+10. Nunca quebre os dados salvos: mudança de formato exige migração descrita no plan, para
+    uma nova chave; as chaves antigas (`habits@v2`, `NLWSetup@habits`) nunca são apagadas
+    nem sobrescritas.
 
 ### Convenções
 

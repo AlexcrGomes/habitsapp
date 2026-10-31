@@ -1,9 +1,11 @@
 // ===== Constantes =====
 
 const OLD_STORAGE_KEY = "NLWSetup@habits"
-const STORAGE_KEY = "habits@v2"
+const V2_STORAGE_KEY = "habits@v2"
+const STORAGE_KEY = "habits@v3"
 const MAX_ACTIVE = 10
 const MAX_NAME = 30
+const EDITABLE_DAYS = 7 // hoje + 6 dias anteriores
 
 // Hábitos da versão anterior, usados só na migração dos dados antigos
 const DEFAULT_HABITS = [
@@ -14,10 +16,63 @@ const DEFAULT_HABITS = [
     { id: "takePills", name: "Remédios", emoji: "💊" },
 ]
 
+// ===== Datas =====
+// Sempre datas locais: toISOString() usa UTC e erraria o dia à noite no Brasil.
+
+function toKey(date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+}
+
+function fromKey(key) {
+    const [year, month, day] = key.split("-").map(Number)
+    return new Date(year, month - 1, day)
+}
+
+// Somar pelo calendário (e não em milissegundos) evita erros no horário de verão
+function addDays(date, amount) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount)
+}
+
+function todayDate() {
+    return addDays(new Date(), 0)
+}
+
+// "YYYY-MM-DD" → "DD/MM"
+function formatDay(key) {
+    const [, month, day] = key.split("-")
+    return `${day}/${month}`
+}
+
+// "YYYY-MM-DD" → "sex"
+function weekdayShort(key) {
+    return fromKey(key).toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")
+}
+
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+}
+
+// Dados antigos não têm ano: um dia/mês que ainda não chegou só pode ser do ano passado
+function inferYear(monthDay, today) {
+    const [month, day] = monthDay.split("-").map(Number)
+    let year = today.getFullYear()
+    if (monthDay > toKey(today).slice(5)) year--
+
+    // 29/02 só existe em ano bissexto: usa o mais recente
+    if (month === 2 && day === 29) {
+        while (!isLeapYear(year)) year--
+    }
+
+    return `${year}-${monthDay}`
+}
+
 // ===== Estado e persistência =====
 
 function emptyState() {
-    return { version: 2, habits: [], days: [], checks: {} }
+    return { version: 3, habits: [], checks: {}, settings: { weekMode: "rolling" } }
 }
 
 // undefined = chave inexistente; null = conteúdo inválido
@@ -51,19 +106,34 @@ function migrate(oldData) {
     }
 }
 
-function loadState() {
-    const current = readJSON(STORAGE_KEY)
-    if (current && current.version === 2) return current
+// v2 → v3: datas ganham o ano e a lista de dias deixa de existir
+function toV3(v2) {
+    const today = todayDate()
+    const checks = {}
 
-    const old = readJSON(OLD_STORAGE_KEY)
-    if (old && typeof old === "object") {
-        const migrated = migrate(old)
-        // Nunca altera a chave antiga; só grava a nova se ela não existir com conteúdo inválido
-        if (current === undefined) localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
-        return migrated
+    for (const [habitId, dates] of Object.entries(v2.checks || {})) {
+        checks[habitId] = [...new Set(dates.map(date => inferYear(date, today)))].sort()
     }
 
-    return emptyState()
+    return { version: 3, habits: v2.habits || [], checks, settings: { weekMode: "rolling" } }
+}
+
+function loadState() {
+    const current = readJSON(STORAGE_KEY)
+    if (current && current.version === 3) return current
+
+    let migrated = null
+    const v2 = readJSON(V2_STORAGE_KEY)
+    const old = readJSON(OLD_STORAGE_KEY)
+
+    if (v2 && v2.version === 2) migrated = toV3(v2)
+    else if (old && typeof old === "object") migrated = toV3(migrate(old))
+
+    if (!migrated) return emptyState()
+
+    // Nunca altera as chaves antigas; só grava a nova se ela não existir com conteúdo inválido
+    if (current === undefined) localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated))
+    return migrated
 }
 
 function saveState() {
@@ -179,25 +249,28 @@ function moveHabit(id, toIndex) {
     return true
 }
 
-function todayKey() {
-    const now = new Date()
-    const month = String(now.getMonth() + 1).padStart(2, "0")
-    const day = String(now.getDate()).padStart(2, "0")
-    return `${month}-${day}`
+// Dias exibidos: "rolling" = hoje + 6 anteriores; "calendar" = domingo a sábado.
+// offset = semanas a partir da atual (0 = atual, negativo = passado).
+function visibleDays(mode, offset) {
+    const today = todayDate()
+    const start = mode === "calendar"
+        ? addDays(today, -today.getDay() + 7 * offset)
+        : addDays(today, 7 * offset - (EDITABLE_DAYS - 1))
+
+    return Array.from({ length: 7 }, (_, index) => toKey(addDays(start, index)))
 }
 
-// "MM-DD" → "DD/MM"
-function formatDay(key) {
-    const [month, day] = key.split("-")
-    return `${day}/${month}`
+function isFuture(key) {
+    return key > toKey(todayDate())
 }
 
-function addDay(day) {
-    if (state.days.includes(day)) return false
+function isEditable(key) {
+    const today = todayDate()
+    return key >= toKey(addDays(today, -(EDITABLE_DAYS - 1))) && key <= toKey(today)
+}
 
-    state.days.push(day)
-    state.days.sort()
-    return true
+function periodLabel(days) {
+    return `${formatDay(days[0])} – ${formatDay(days.at(-1))}`
 }
 
 function toggleCheck(habitId, day, checked) {
@@ -212,6 +285,14 @@ const form = document.querySelector("#form-habits")
 const habitsList = document.querySelector(".habits")
 const habitsActions = document.querySelector(".habits-actions")
 const daysContainer = document.querySelector(".days")
+const periodText = document.querySelector("#week-period")
+const previousWeekButton = document.querySelector("#week-previous")
+const nextWeekButton = document.querySelector("#week-next")
+const weekModeInputs = document.querySelectorAll('input[name="week-mode"]')
+
+// Estado de tela, não salvo: recarregar sempre volta para a semana atual
+let weekOffset = 0
+let currentToday = toKey(todayDate())
 
 // Cria um elemento; atributos false/null são omitidos e true vira atributo vazio
 function el(tag, attributes = {}, ...children) {
@@ -271,27 +352,57 @@ function renderActions() {
     habitsActions.replaceChildren(...children)
 }
 
+function lockReason(day) {
+    if (isFuture(day)) return " (dia futuro)"
+    if (!isEditable(day)) return " (somente consulta)"
+    return ""
+}
+
 function renderDays() {
     const habits = activeHabits()
+    const today = toKey(todayDate())
 
-    daysContainer.replaceChildren(...state.days.map(day =>
-        el("div", { class: "day" },
-            el("div", {}, formatDay(day)),
+    daysContainer.replaceChildren(...visibleDays(state.settings.weekMode, weekOffset).map(day =>
+        el("div", { class: day === today ? "day today" : "day", "aria-current": day === today ? "date" : null },
+            el("div", { class: "day-label" },
+                el("span", { class: "day-weekday" }, weekdayShort(day)),
+                el("span", {}, formatDay(day)),
+            ),
             ...habits.map(habit => el("input", {
                 type: "checkbox",
                 name: habit.id,
                 value: day,
-                "aria-label": `${habit.name} em ${formatDay(day)}`,
+                "aria-label": `${habit.name} em ${formatDay(day)}${lockReason(day)}`,
                 checked: (state.checks[habit.id] || []).includes(day),
+                disabled: !isEditable(day),
             })),
         )
     ))
 }
 
+function renderNav() {
+    periodText.textContent = periodLabel(visibleDays(state.settings.weekMode, weekOffset))
+    nextWeekButton.disabled = weekOffset === 0
+    weekModeInputs.forEach(input => { input.checked = input.value === state.settings.weekMode })
+}
+
 function render() {
+    renderNav()
     renderHabits()
     renderActions()
     renderDays()
+}
+
+// Em telas estreitas a grade rola na horizontal; garante que hoje esteja visível
+function scrollToToday() {
+    document.querySelector(".day.today")?.scrollIntoView({ block: "nearest", inline: "center" })
+}
+
+function showCurrentWeek() {
+    weekOffset = 0
+    currentToday = toKey(todayDate())
+    render()
+    scrollToToday()
 }
 
 // Foca o primeiro seletor que existir e estiver habilitado (a renderização recria os botões)
@@ -311,16 +422,36 @@ function habitSelector(id, action) {
 
 // ===== Eventos =====
 
-document.querySelector("#register-day").addEventListener("click", () => {
-    if (!addDay(todayKey())) {
-        alert("Dia já incluso ❌")
-        return
-    }
-
-    alert("Adicionado com sucesso ✔")
-    saveState()
+previousWeekButton.addEventListener("click", () => {
+    weekOffset--
     render()
 })
+
+nextWeekButton.addEventListener("click", () => {
+    if (weekOffset === 0) return
+
+    weekOffset++
+    if (weekOffset === 0) showCurrentWeek()
+    else render()
+    // O botão fica desabilitado ao chegar na semana atual; o foco passa para o ‹
+    if (nextWeekButton.disabled) previousWeekButton.focus()
+})
+
+weekModeInputs.forEach(input => input.addEventListener("change", () => {
+    state.settings.weekMode = input.value
+    saveState()
+    showCurrentWeek()
+}))
+
+// App aberto na virada da meia-noite: ao voltar para a aba, mostra o novo dia
+function refreshIfDayChanged() {
+    if (toKey(todayDate()) !== currentToday) showCurrentWeek()
+}
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refreshIfDayChanged()
+})
+window.addEventListener("focus", refreshIfDayChanged)
 
 form.addEventListener("change", event => {
     const input = event.target
@@ -449,7 +580,7 @@ closeOnEscape(habitDialog, closeHabitDialog)
 // O botão que abriu o diálogo pode ter sido recriado pela renderização, então o foco é devolvido aqui
 function closeHabitDialog() {
     habitDialog.close()
-    focusFirst(editingId && habitSelector(editingId, "edit"), '[data-action="new"]', '[data-action="archived"]', "#register-day")
+    focusFirst(editingId && habitSelector(editingId, "edit"), '[data-action="new"]', '[data-action="archived"]', "#week-previous")
 }
 
 // --- Diálogo de arquivados ---
@@ -517,7 +648,7 @@ archivedList.addEventListener("click", event => {
 
 function closeArchivedDialog() {
     archivedDialog.close()
-    focusFirst('[data-action="archived"]', '[data-action="new"]', "#register-day")
+    focusFirst('[data-action="archived"]', '[data-action="new"]', "#week-previous")
 }
 
 document.querySelector("#archived-close").addEventListener("click", closeArchivedDialog)
@@ -569,4 +700,7 @@ function endDrag(event) {
 habitsList.addEventListener("pointerup", endDrag)
 habitsList.addEventListener("pointercancel", endDrag)
 
-render()
+// Sem isso o navegador restaura a rolagem anterior depois do carregamento e desfaz o scrollToToday
+history.scrollRestoration = "manual"
+showCurrentWeek()
+window.addEventListener("load", scrollToToday)
