@@ -29,8 +29,13 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 002 | [Hábitos personalizáveis](../specs/002-habitos-personalizaveis/spec.md) | Aprovada — implementada, falta verificar V-29 e V-33 |
 | 003 | [Estatísticas e streaks](../specs/003-estatisticas-streaks/spec.md) | Rascunho |
 | 004 | [Semana automática com registro retroativo](../specs/004-calendario-semanal/spec.md) | Implementada |
+| 005 | [Contas de usuário com dados no servidor](../specs/005-contas-e-servidor/spec.md) | Implementada |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
+>
+> Desde a spec 005 o app é React + Spring Boot + PostgreSQL (constituição 2.0.0). As specs
+> 001–004 continuam valendo como comportamento; as referências a `script.js`, `index.html` e
+> `localStorage` nelas são históricas.
 
 ---
 
@@ -108,8 +113,11 @@ Crie a pasta `specs/004-nome-da-feature/` e copie para ela o
 
 ### 8. Verificar e encerrar
 
-- Abra `index.html` no navegador e execute todo o checklist de verificação.
-- Tudo ok → spec com status `Implementada` e tabela de specs deste guia atualizada.
+- Rode os testes automatizados: `scripts/api-mvn.sh verify` (API) e `cd web && npm test`.
+- Suba o app com `docker compose up --build` e execute o checklist de verificação em
+  `http://localhost:8080`.
+- Testes verdes e checklist ok → spec com status `Implementada` e tabela de specs deste guia
+  atualizada.
 - Abra o PR referenciando a pasta da spec.
 
 ---

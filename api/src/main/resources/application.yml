@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: habits-api
+  # URL, usuário e senha do banco vêm das variáveis SPRING_DATASOURCE_* (docker-compose.yml)
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  session:
+    jdbc:
+      # As tabelas de sessão são criadas pelo Flyway (V2__spring_session.sql)
+      initialize-schema: never
+
+server:
+  servlet:
+    session:
+      timeout: 7d
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${HABITS_COOKIE_SECURE:false}
+  error:
+    include-message: never
+    include-stacktrace: never

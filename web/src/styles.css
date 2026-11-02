@@ -1,3 +1,5 @@
+/* Tema e layout portados do app estático (specs 002 e 004) + telas de conta (spec 005) */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,22 +7,10 @@
 }
 
 body {
+    min-height: 100vh;
     background-color: #09090A;
     color: white;
-    height: 100vh;
-    
-}
-
-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 48px;
-    /* sticky ocupa o próprio espaço: a navegação pode quebrar de linha sem cobrir a grade */
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: #09090A;
+    font-family: 'Inter', sans-serif;
 }
 
 .visually-hidden {
@@ -32,13 +22,75 @@ header {
     white-space: nowrap;
 }
 
+:focus-visible {
+    outline: 2px solid #A78BFA;
+    outline-offset: 2px;
+}
+
+button {
+    padding: 16px 24px;
+    border-radius: 8px;
+    border: 1px solid #8B5CF6;
+    background-color: transparent;
+    color: white;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 125%;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.primary {
+    background-color: #8B5CF6;
+}
+
+button.danger {
+    border-color: #F87171;
+}
+
+button.link {
+    display: inline;
+    padding: 0;
+    border: none;
+    color: #A78BFA;
+    text-decoration: underline;
+}
+
+.loading {
+    padding: 48px;
+    color: #A1A1AA;
+}
+
+/* ===== Cabeçalho ===== */
+
+/* sticky ocupa o próprio espaço: a navegação pode quebrar de linha sem cobrir a grade */
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding: 48px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #09090A;
+}
+
 .week-nav {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
     gap: 16px;
-    font-family: 'Inter', sans-serif;
+    margin-left: auto;
 }
 
 .week-arrows {
@@ -55,7 +107,7 @@ header {
     font-size: 20px;
 }
 
-#week-period {
+.week-period {
     min-width: 116px;
     font-family: 'Roboto Mono', monospace;
     font-size: 14px;
@@ -92,23 +144,48 @@ header {
     outline-offset: -2px;
 }
 
-button {
-    padding: 16px 24px;
-    border-radius: 8px;
-    border: 1px solid #8B5CF6;
-    background-color: transparent;
-    color: white;
+.user-menu {
     display: flex;
-    gap: 12px;
     align-items: center;
-    font-family: 'inter';
-    font-weight: 600;
-    font-size: 16px;
-    line-height: 125%;
-    cursor: pointer;
+    gap: 8px;
 }
 
-#form-habits {
+.user-menu button {
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+.user-name {
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #A1A1AA;
+    font-size: 14px;
+}
+
+.app-message {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 48px;
+    padding: 12px 16px;
+    border: 1px solid #27272A;
+    border-radius: 8px;
+    background-color: #18181B;
+    font-size: 14px;
+}
+
+.app-message button {
+    padding: 0 8px;
+    border: none;
+    font-size: 20px;
+}
+
+/* ===== Grade de hábitos × dias ===== */
+
+.board {
     display: flex;
     padding: 48px;
     width: fit-content;
@@ -138,7 +215,6 @@ button {
 .habit-symbol {
     width: 48px;
     flex-shrink: 0;
-    font-family: 'Inter', sans-serif;
     font-size: 32px;
     text-align: center;
 }
@@ -148,7 +224,6 @@ button {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-family: 'Inter', sans-serif;
     font-size: 16px;
     color: #A1A1AA;
 }
@@ -219,110 +294,6 @@ dialog button {
 }
 
 .habits-empty {
-    font-family: 'Inter', sans-serif;
-    color: #A1A1AA;
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-button.primary {
-    background-color: #8B5CF6;
-}
-
-button.danger {
-    border-color: #F87171;
-}
-
-:focus-visible {
-    outline: 2px solid #A78BFA;
-    outline-offset: 2px;
-}
-
-dialog {
-    margin: auto;
-    width: min(440px, calc(100% - 32px));
-    padding: 24px;
-    border: 1px solid #27272A;
-    border-radius: 12px;
-    background-color: #18181B;
-    color: white;
-    font-family: 'Inter', sans-serif;
-}
-
-dialog::backdrop {
-    background-color: rgb(0 0 0 / 0.7);
-}
-
-dialog h2 {
-    margin-bottom: 16px;
-    font-size: 20px;
-}
-
-dialog label {
-    display: block;
-    margin: 16px 0 6px;
-    font-size: 14px;
-    color: #A1A1AA;
-}
-
-dialog input[type="text"] {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #27272A;
-    border-radius: 8px;
-    background-color: #09090A;
-    color: white;
-    font-size: 16px;
-}
-
-.dialog-hint {
-    display: block;
-    margin-top: 6px;
-    font-size: 13px;
-    color: #A1A1AA;
-}
-
-.dialog-error {
-    min-height: 20px;
-    margin-top: 12px;
-    font-size: 14px;
-    color: #F87171;
-}
-
-.dialog-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-#habit-archive {
-    margin-right: auto;
-}
-
-#archived-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    list-style: none;
-}
-
-.archived-item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
-.archived-item .habit-name {
-    flex: 1;
-}
-
-.archived-empty {
     color: #A1A1AA;
 }
 
@@ -347,8 +318,7 @@ dialog input[type="text"] {
     flex-direction: column;
     height: 44px;
     margin-bottom: 8px;
-
-    font-family: 'Roboto Mono';
+    font-family: 'Roboto Mono', monospace;
     font-size: 20px;
     line-height: 125%;
     color: #A1A1AA;
@@ -367,10 +337,8 @@ input[type="checkbox"] {
     border: 2px solid #27272A;
     border-radius: 8px;
     background: #18181B;
-
 }
 
-/*pseudo-seletor*/
 input[type="checkbox"]:checked {
     background: #8B5CF6;
     border: 2px solid #A78BFA;
@@ -393,22 +361,168 @@ input[type="checkbox"]:disabled {
     border-color: #8B5CF6;
 }
 
+/* ===== Diálogos ===== */
+
+dialog {
+    margin: auto;
+    width: min(440px, calc(100% - 32px));
+    padding: 24px;
+    border: 1px solid #27272A;
+    border-radius: 12px;
+    background-color: #18181B;
+    color: white;
+}
+
+dialog::backdrop {
+    background-color: rgb(0 0 0 / 0.7);
+}
+
+dialog h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+dialog label,
+.auth-card label {
+    display: block;
+    margin: 16px 0 6px;
+    font-size: 14px;
+    color: #A1A1AA;
+}
+
+dialog input:not([type="checkbox"]),
+.auth-card input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #27272A;
+    border-radius: 8px;
+    background-color: #09090A;
+    color: white;
+    font-size: 16px;
+}
+
+.dialog-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #A1A1AA;
+}
+
+.dialog-error,
+.form-error {
+    min-height: 20px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #F87171;
+}
+
+.field-error {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #F87171;
+}
+
+.dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.dialog-start {
+    margin-right: auto;
+}
+
+.archived-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+}
+
+.archived-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.archived-item .habit-name {
+    flex: 1;
+}
+
+.archived-empty {
+    color: #A1A1AA;
+}
+
+/* ===== Login e cadastro ===== */
+
+.auth-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 64px 16px;
+}
+
+.auth-card {
+    width: min(400px, 100%);
+    padding: 32px;
+    border: 1px solid #27272A;
+    border-radius: 12px;
+    background-color: #18181B;
+}
+
+.auth-card h1 {
+    font-size: 24px;
+}
+
+.auth-card button[type="submit"] {
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.auth-notice {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: #27272A;
+    font-size: 14px;
+}
+
+.auth-switch {
+    margin-top: 24px;
+    font-size: 14px;
+    color: #A1A1AA;
+    text-align: center;
+}
+
 @media (max-width: 570px) {
+    /* No celular o cabeçalho (com menu do usuário) ocuparia um terço da tela se ficasse preso */
     header {
-        flex-wrap: wrap;
-        gap: 16px;
+        position: static;
         padding: 24px 16px;
     }
 
     .week-nav {
-        justify-content: flex-start;
+        margin-left: 0;
     }
 
-    #form-habits {
+    .board {
         padding: 24px 16px 48px;
+    }
+
+    .app-message {
+        margin: 0 16px;
     }
 
     .habit-name {
         max-width: 72px;
+    }
+
+    .user-name {
+        max-width: 100px;
     }
 }

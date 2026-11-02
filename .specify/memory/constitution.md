@@ -1,6 +1,6 @@
 # Constituição do Projeto Habits
 
-**Versão**: 1.1.0 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-10-31
+**Versão**: 2.0.0 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-11-01
 
 Esta constituição define os princípios não negociáveis do projeto. Toda spec, plano e
 implementação deve estar em conformidade com ela. Em caso de conflito entre um documento
@@ -26,36 +26,37 @@ Nenhuma mudança funcional é implementada sem uma `spec.md` com status **Aprova
 **Por quê**: garante que o comportamento esperado esteja combinado e verificável antes de
 qualquer código ser escrito, e que o histórico de decisões fique no repositório.
 
-### II. Simplicidade — sem build
+### II. Simplicidade dentro da stack oficial
 
-O app é HTML, CSS e JavaScript puro, aberto diretamente no navegador.
+A aplicação usa a stack definida em **Restrições técnicas**: frontend React + TypeScript,
+API Spring Boot, banco PostgreSQL, tudo orquestrado com Docker Compose.
 
-- Não introduzir bundler, transpilador, framework ou gerenciador de pacotes sem
-  justificativa registrada na seção **Complexity Tracking** do `plan.md`.
-- Toda nova dependência externa (CDN) deve ser justificada e ter versão fixa.
+- Não introduzir outra linguagem, framework, banco ou serviço sem justificativa registrada
+  na seção **Complexity Tracking** do `plan.md`.
+- Toda nova dependência (Maven, npm, imagem Docker) deve ser justificada e ter versão fixa.
 - Preferir código direto e legível a abstrações antecipadas.
 
-**Por quê**: o valor do projeto está em ser pequeno, rápido de entender e de rodar.
+**Por quê**: a arquitetura cresceu; limitar a stack mantém o projeto fácil de entender, rodar
+e manter.
 
-### III. Dados locais e compatíveis
+### III. Dados no servidor, isolados por usuário
 
-Os dados do usuário ficam no `localStorage`, na chave vigente indicada em **Restrições
-técnicas**.
+Os dados ficam no PostgreSQL e pertencem a um usuário.
 
+- Todo acesso a dados é filtrado pelo usuário autenticado na sessão. Recurso de outro
+  usuário é tratado como inexistente (**404**), nunca como proibido.
 - Nenhuma mudança pode fazer o usuário perder dados já gravados.
-- Qualquer alteração de chave ou formato exige uma **migração** descrita no `plan.md`
-  (leitura do formato antigo → conversão → gravação no novo) e um cenário de verificação
-  com dados pré-existentes.
-- A migração grava em uma **nova chave**; as chaves anteriores nunca são apagadas nem
-  sobrescritas, e ficam como cópia de segurança.
-- Nenhum dado é enviado para servidores externos.
+- Mudanças de esquema só por **migração versionada** (Flyway). Uma migração já aplicada
+  nunca é editada; corrige-se com uma nova.
+- Migração destrutiva (apagar coluna/tabela com dados) exige plano de conversão descrito no
+  `plan.md` e cenário de verificação com dados pré-existentes.
 
-**Por quê**: o histórico de hábitos é o único ativo do usuário; não existe backup em
-servidor.
+**Por quê**: o histórico de hábitos é o único ativo do usuário, e cada um deve ver só o seu.
 
 ### IV. Interface em pt-BR e acessível
 
-- Todos os textos visíveis em português do Brasil, revisados ortograficamente.
+- Todos os textos visíveis em português do Brasil, revisados ortograficamente — inclusive
+  mensagens de erro vindas da API.
 - Imagens com `alt` descritivo; elementos interativos acessíveis por teclado e com foco
   visível.
 - Manter contraste adequado no tema escuro (fundo `#09090A`).
@@ -65,25 +66,34 @@ servidor.
 ### V. Responsivo
 
 - A interface deve funcionar em telas de celular e desktop.
-- O breakpoint existente de 570px (`style.css`) deve ser preservado ou evoluído de forma
-  documentada no plan.
+- O breakpoint de 570px deve ser preservado ou evoluído de forma documentada no plan.
 
 **Por quê**: o registro de hábitos acontece principalmente no celular.
 
 ### VI. Verificação explícita
 
-Como o projeto não possui framework de testes automatizados:
+- **Testes automatizados são obrigatórios**:
+  - API: testes de unidade das regras e de integração com PostgreSQL real, incluindo
+    **isolamento entre usuários** em todas as rotas que acessam dados;
+  - frontend: testes da lógica (datas, validações) e dos componentes principais.
+- Todo `tasks.md` termina com um **checklist de verificação manual** da interface,
+  derivado dos cenários *Dado/Quando/Então* da spec.
+- Uma feature só passa para **Implementada** com os testes verdes e o checklist verificado
+  no navegador.
 
-- Todo `tasks.md` termina com um **checklist de verificação manual** derivado dos
-  cenários *Dado/Quando/Então* da spec.
-- O checklist da spec `001-registro-de-habitos` é a suíte de **regressão** e deve ser
-  executado a cada nova feature.
-- Uma feature só passa para **Implementada** quando todos os itens do checklist forem
-  verificados no navegador.
-- Se testes automatizados forem introduzidos no futuro, isso exige emenda desta
-  constituição.
+**Por quê**: com servidor e vários usuários, um erro pode expor ou corromper dados de outros.
 
-**Por quê**: sem testes, a verificação precisa ser deliberada e rastreável.
+### VII. Segurança
+
+- Senhas só armazenadas com hash forte (BCrypt); nunca em texto, log ou resposta da API.
+- Sessão em cookie `HttpOnly` e `SameSite`; proteção contra CSRF nas requisições que
+  alteram dados.
+- Segredos (senhas de banco, chaves) fora do git: `.env` ignorado, `.env.example` versionado
+  sem valores reais.
+- O servidor valida todas as regras; o cliente nunca é a fonte de verdade.
+- Mensagens de login não revelam se um e-mail está cadastrado.
+
+**Por quê**: o app agora guarda credenciais e dados de várias pessoas.
 
 ---
 
@@ -91,12 +101,14 @@ Como o projeto não possui framework de testes automatizados:
 
 | Item | Valor atual |
 |------|-------------|
-| Linguagens | HTML5, CSS3, JavaScript (ES6+, sem módulos) |
-| Bibliotecas | Nenhuma (a `NLWSetup` foi removida na spec 002) |
-| Persistência | `localStorage` — chave vigente `habits@v3`; anteriores `habits@v2` e `NLWSetup@habits` (só leitura, na migração) |
+| Frontend | React + TypeScript (Vite), servido por Nginx |
+| API | Java 21 + Spring Boot 3 (Maven) |
+| Banco | PostgreSQL, migrações com Flyway |
+| Autenticação | E-mail e senha; sessão Spring Session JDBC |
+| Orquestração | Docker Compose: `db`, `api`, `web` |
+| Fuso de referência | `America/Sao_Paulo` |
+| Testes | JUnit + Testcontainers (API); Vitest + Testing Library (frontend) |
 | Fontes | Google Fonts: Inter 600, Roboto Mono 700 |
-| Execução | Abrir `index.html` no navegador (ou servidor estático) |
-| Hospedagem | Estática (GitHub Pages) |
 
 ---
 
@@ -117,3 +129,4 @@ Como o projeto não possui framework de testes automatizados:
 |--------|------|---------|
 | 1.0.0 | 2026-10-30 | Versão inicial |
 | 1.1.0 | 2026-10-31 | Princípio III: chave vigente movida para Restrições técnicas e regra de nunca apagar/sobrescrever chaves antigas; restrições técnicas atualizadas (sem NLWSetup, chave `habits@v3`) |
+| 2.0.0 | 2026-11-01 | Nova arquitetura (spec 005): II redefinido para a stack React + Spring Boot + PostgreSQL + Docker; III redefinido para dados no servidor isolados por usuário e migrações Flyway; VI passa a exigir testes automatizados; novo VII (Segurança); restrições técnicas reescritas |
