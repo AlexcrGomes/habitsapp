@@ -3,6 +3,10 @@
 **Branch**: `calendario` (criada pelo responsável; exceção à convenção `NNN-nome`)
 **Criada em**: 2026-10-31
 **Status**: Implementada em 2026-10-31 (aprovada em 2026-10-31)
+
+> **Portada para a [spec 005](../005-contas-e-servidor/spec.md)**: estas regras continuam
+> válidas, agora por conta de usuário, aplicadas pela API e pela interface React.
+> Referências a `script.js` e `localStorage` são históricas.
 **Entrada**: "Sem precisar salvar nada de data, sempre que o usuário abrir o sistema vai estar
 mostrando o dia corrente, mas ele pode registrar hábitos feitos nos dias anteriores."
 

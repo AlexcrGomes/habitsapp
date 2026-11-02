@@ -20,16 +20,35 @@ Utilizando tecnologias WEB está aplicação permite o rastreamento de hábitos.
 
 Esse projeto foi desenvolvido com as seguintes tecnologias:
 
-- HTML e CSS
-- JavaScript
-- Git e Github
+- React + TypeScript (Vite) e Nginx
+- Java 21 + Spring Boot
+- PostgreSQL
+- Docker Compose
 - Figma
 
 ## 💻 Projeto
 
-O Habits é um app para ajudar a rastrear os hábitos.
+O Habits é um app para ajudar a rastrear os hábitos. Cada pessoa cria sua conta e vê só os
+próprios hábitos e registros, guardados no servidor.
 
-- [Visite o projeto online](https://maykbrito.github.io/nlw-setup)
+> A versão original, só com HTML/CSS/JS e dados no navegador, nasceu do NLW Setup
+> ([projeto de referência](https://maykbrito.github.io/nlw-setup)).
+
+## ▶️ Como rodar
+
+Pré-requisito: Docker com Compose (no Windows, dentro do WSL).
+
+```bash
+cp .env.example .env        # troque a senha do banco
+docker compose up --build   # http://localhost:8080
+```
+
+Testes:
+
+```bash
+scripts/api-mvn.sh verify   # API (sobe um PostgreSQL de teste com Testcontainers)
+cd web && npm install && npm test
+```
 
 ## 🔖 Layout
 

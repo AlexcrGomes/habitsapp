@@ -1,0 +1,15 @@
+# Segredos locais
+.env
+
+# API (Maven)
+api/target/
+
+# Frontend
+web/node_modules/
+web/dist/
+web/coverage/
+
+# IDEs
+.idea/
+.vscode/
+*.iml

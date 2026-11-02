@@ -3,6 +3,10 @@
 **Branch**: `002-habitos-personalizaveis`
 **Criada em**: 2026-10-30
 **Status**: Aprovada em 2026-10-30
+
+> **Portada para a [spec 005](../005-contas-e-servidor/spec.md)**: estas regras continuam
+> válidas, agora por conta de usuário, aplicadas pela API e pela interface React.
+> Referências a `script.js` e `localStorage` são históricas.
 **Entrada**: "Permitir que o usuário crie, edite e remova os próprios hábitos em vez dos 5 fixos."
 
 > Plano de implementação: [plan.md](./plan.md).
