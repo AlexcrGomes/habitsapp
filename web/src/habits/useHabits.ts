@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, api } from "../api/client";
-import type { Habit } from "../api/types";
+import type { Goal, Habit } from "../api/types";
+import type { Goals } from "../goals/progress";
 import { checkKey } from "./rules";
 
 function toggled(set: Set<string>, key: string, checked: boolean): Set<string> {
@@ -10,10 +11,15 @@ function toggled(set: Set<string>, key: string, checked: boolean): Set<string> {
   return next;
 }
 
-/** Hábitos do usuário e marcações do período visível. */
+function toGoals(list: Goal[]): Goals {
+  return new Map(list.map((goal) => [goal.habitId, goal.daysPerWeek]));
+}
+
+/** Hábitos do usuário, marcações do período visível e metas vigentes no último dia dele. */
 export function useHabits(from: string, to: string) {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [checks, setChecks] = useState<Set<string>>(() => new Set());
+  const [goals, setGoals] = useState<Goals>(() => new Map());
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +32,20 @@ export function useHabits(from: string, to: string) {
   const reload = useCallback(async () => {
     setHabits(await api.habits.list());
   }, []);
+
+  const reloadGoals = useCallback(async () => {
+    setGoals(toGoals(await api.goals.list(to)));
+  }, [to]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.goals.list(to).then((list) => {
+      if (!cancelled) setGoals(toGoals(list));
+    }, fail);
+    return () => {
+      cancelled = true;
+    };
+  }, [to, fail]);
 
   useEffect(() => {
     reload().then(() => setLoaded(true), fail);
@@ -76,8 +96,8 @@ export function useHabits(from: string, to: string) {
   /** Executa uma ação de hábito e recarrega a lista. Erros sobem para o diálogo mostrar. */
   const mutate = useCallback(async (action: () => Promise<unknown>) => {
     await action();
-    await reload();
-  }, [reload]);
+    await Promise.all([reload(), reloadGoals()]);
+  }, [reload, reloadGoals]);
 
-  return { habits, checks, loaded, error, setError, toggle, move, mutate };
+  return { habits, checks, goals, loaded, error, setError, toggle, move, mutate };
 }

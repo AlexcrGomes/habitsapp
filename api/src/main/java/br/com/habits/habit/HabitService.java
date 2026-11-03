@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import br.com.habits.common.ApiException;
+import br.com.habits.goal.GoalService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,11 @@ public class HabitService {
     private static final int MAX_EMOJI = 32;
 
     private final HabitRepository habits;
+    private final GoalService goals;
 
-    public HabitService(HabitRepository habits) {
+    public HabitService(HabitRepository habits, GoalService goals) {
         this.habits = habits;
+        this.goals = goals;
     }
 
     @Transactional(readOnly = true)
@@ -32,19 +35,24 @@ public class HabitService {
     }
 
     @Transactional
-    public Habit create(Long userId, String name, String emoji) {
+    public Habit create(Long userId, String name, String emoji, Integer goal) {
         String validName = validateName(userId, name, null);
+        GoalService.validate(goal);
         if (habits.countByUserIdAndArchivedFalse(userId) >= MAX_ACTIVE) {
             throw limitReached();
         }
-        return habits.save(new Habit(userId, validName, firstGrapheme(emoji), habits.maxActivePosition(userId) + 1));
+        Habit habit = habits.save(new Habit(userId, validName, firstGrapheme(emoji), habits.maxActivePosition(userId) + 1));
+        goals.set(habit.getId(), goal);
+        return habit;
     }
 
+    /** Substitui nome, emoji e meta (spec 006: a meta nova vale a partir de hoje). */
     @Transactional
-    public Habit update(Long userId, Long id, String name, String emoji) {
+    public Habit update(Long userId, Long id, String name, String emoji, Integer goal) {
         Habit habit = find(userId, id);
         habit.setName(validateName(userId, name, id));
         habit.setEmoji(firstGrapheme(emoji));
+        goals.set(habit.getId(), GoalService.validate(goal));
         return habit;
     }
 
