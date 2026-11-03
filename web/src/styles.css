@@ -219,12 +219,85 @@ header {
     text-align: center;
 }
 
+.habit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
 .habit-name {
     max-width: 160px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 16px;
+    color: #A1A1AA;
+}
+
+/* ===== Metas semanais (spec 006) ===== */
+
+.goal-bar {
+    display: block;
+    width: 120px;
+    max-width: 100%;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background-color: #27272A;
+}
+
+.goal-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background-color: #8B5CF6;
+    transition: width 0.2s;
+}
+
+.goal-bar.reached .goal-bar-fill {
+    background-color: #22C55E;
+}
+
+.week-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin: 24px 48px 0;
+    padding: 16px 20px;
+    max-width: 560px;
+    border: 1px solid #27272A;
+    border-radius: 12px;
+    background-color: #18181B;
+}
+
+.week-summary h2 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #A1A1AA;
+}
+
+.week-summary-body {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.week-summary-percent {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #A78BFA;
+}
+
+.week-summary-label {
+    font-size: 16px;
+}
+
+.week-summary-empty {
+    font-size: 14px;
     color: #A1A1AA;
 }
 
@@ -391,6 +464,7 @@ dialog label,
 }
 
 dialog input:not([type="checkbox"]),
+dialog select,
 .auth-card input {
     width: 100%;
     padding: 12px;
@@ -520,6 +594,15 @@ dialog input:not([type="checkbox"]),
 
     .habit-name {
         max-width: 72px;
+    }
+
+    .goal-bar {
+        width: 72px;
+    }
+
+    .week-summary {
+        margin: 16px 16px 0;
+        padding: 12px 16px;
     }
 
     .user-name {

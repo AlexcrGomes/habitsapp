@@ -3,6 +3,7 @@ import { ApiError, api } from "../api/client";
 import type { Habit, User, WeekMode } from "../api/types";
 import { ChangePasswordDialog } from "../auth/ChangePasswordDialog";
 import { useAuth } from "../auth/AuthContext";
+import { WeekSummary } from "../goals/WeekSummary";
 import { ArchivedDialog } from "../habits/ArchivedDialog";
 import { HabitDialog } from "../habits/HabitDialog";
 import { HabitList } from "../habits/HabitList";
@@ -24,7 +25,7 @@ export function HomePage({ user }: { user: User }) {
   const todayRef = useRef(today);
 
   const days = useMemo(() => visibleDays(user.weekMode, offset, today), [user.weekMode, offset, today]);
-  const { habits, checks, loaded, error, setError, toggle, move, mutate } = useHabits(days[0], days[6]);
+  const { habits, checks, goals, loaded, error, setError, toggle, move, mutate } = useHabits(days[0], days[6]);
   const active = habits.filter((habit) => !habit.archived);
   const archived = habits.filter((habit) => habit.archived);
 
@@ -86,11 +87,16 @@ export function HomePage({ user }: { user: User }) {
         </p>
       )}
 
+      {loaded && <WeekSummary habits={active} checks={checks} goals={goals} days={days} today={today} />}
+
       <main className="board">
         {loaded ? (
           <>
             <HabitList
               habits={active}
+              days={days}
+              checks={checks}
+              goals={goals}
               archivedCount={archived.length}
               onNew={() => setDialog({ type: "habit", habit: null })}
               onEdit={(habit) => setDialog({ type: "habit", habit })}
@@ -108,9 +114,10 @@ export function HomePage({ user }: { user: User }) {
         open={dialog?.type === "habit"}
         habit={dialog?.type === "habit" ? dialog.habit : null}
         onClose={closeDialog}
-        onSave={(name, emoji) => {
+        onSave={(name, emoji, goal) => {
           const editing = dialog?.type === "habit" ? dialog.habit : null;
-          return mutate(() => (editing ? api.habits.update(editing.id, name, emoji) : api.habits.create(name, emoji)));
+          return mutate(() =>
+            editing ? api.habits.update(editing.id, name, emoji, goal) : api.habits.create(name, emoji, goal));
         }}
         onRestore={(habitId) => mutate(() => api.habits.restore(habitId))}
         onArchive={(habit) => mutate(() => api.habits.archive(habit.id))}

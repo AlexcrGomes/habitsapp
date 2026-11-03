@@ -12,6 +12,13 @@ export interface Habit {
   name: string;
   emoji: string;
   archived: boolean;
+  /** Meta vigente hoje, em dias por semana (1 a 7); null = sem meta (spec 006) */
+  goal: number | null;
+}
+
+export interface Goal {
+  habitId: number;
+  daysPerWeek: number;
 }
 
 export interface Check {

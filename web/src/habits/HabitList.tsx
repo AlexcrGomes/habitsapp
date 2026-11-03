@@ -1,9 +1,15 @@
 import { useLayoutEffect, useRef, type PointerEvent } from "react";
 import type { Habit } from "../api/types";
+import { GoalBar } from "../goals/GoalBar";
+import { type Goals, doneCount } from "../goals/progress";
 import { MAX_ACTIVE, habitSymbol } from "./rules";
 
 interface HabitListProps {
   habits: Habit[];
+  /** Semana exibida, marcações e metas vigentes nela, para a barra de cada meta */
+  days: string[];
+  checks: Set<string>;
+  goals: Goals;
   archivedCount: number;
   onNew: () => void;
   onEdit: (habit: Habit) => void;
@@ -19,7 +25,7 @@ interface DragState {
   toIndex: number | null;
 }
 
-export function HabitList({ habits, archivedCount, onNew, onEdit, onOpenArchived, onMove }: HabitListProps) {
+export function HabitList({ habits, days, checks, goals, archivedCount, onNew, onEdit, onOpenArchived, onMove }: HabitListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const drag = useRef<DragState | null>(null);
   const pendingFocus = useRef<{ id: number; direction: "up" | "down" } | null>(null);
@@ -90,7 +96,12 @@ export function HabitList({ habits, archivedCount, onNew, onEdit, onOpenArchived
             <span className="habit-handle" title="Arrastar para reordenar" aria-hidden="true"
               onPointerDown={(event) => startDrag(event, habit)}>⠿</span>
             <span className="habit-symbol" aria-hidden="true">{habitSymbol(habit)}</span>
-            <span className="habit-name" title={habit.name}>{habit.name}</span>
+            <span className="habit-info">
+              <span className="habit-name" title={habit.name}>{habit.name}</span>
+              {goals.has(habit.id) && (
+                <GoalBar name={habit.name} done={doneCount(habit.id, days, checks)} goal={goals.get(habit.id)!} />
+              )}
+            </span>
             <span className="habit-move">
               <button type="button" data-action="up" aria-label={`Mover ${habit.name} para cima`}
                 disabled={index === 0} onClick={() => moveByButton(habit, index, "up")}>↑</button>

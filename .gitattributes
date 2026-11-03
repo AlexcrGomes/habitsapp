@@ -1,0 +1,2 @@
+# Scripts shell precisam de LF para rodar no WSL/Linux (core.autocrlf converteria para CRLF)
+*.sh text eol=lf

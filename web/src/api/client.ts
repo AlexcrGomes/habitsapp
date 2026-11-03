@@ -1,4 +1,4 @@
-import type { Check, Habit, User, WeekMode } from "./types";
+import type { Check, Goal, Habit, User, WeekMode } from "./types";
 
 /** Erro da API com código estável e mensagem em pt-BR (contrato em specs/005-contas-e-servidor/plan.md). */
 export class ApiError extends Error {
@@ -87,8 +87,10 @@ export const api = {
 
   habits: {
     list: () => request<Habit[]>("GET", "/habits"),
-    create: (name: string, emoji: string) => request<Habit>("POST", "/habits", { name, emoji }),
-    update: (id: number, name: string, emoji: string) => request<Habit>("PATCH", `/habits/${id}`, { name, emoji }),
+    create: (name: string, emoji: string, goal: number | null) => request<Habit>("POST", "/habits", { name, emoji, goal }),
+    /** Substitui nome, emoji e meta. */
+    update: (id: number, name: string, emoji: string, goal: number | null) =>
+      request<Habit>("PATCH", `/habits/${id}`, { name, emoji, goal }),
     archive: (id: number) => request<Habit>("POST", `/habits/${id}/archive`),
     restore: (id: number) => request<Habit>("POST", `/habits/${id}/restore`),
     remove: (id: number) => request<void>("DELETE", `/habits/${id}`),
@@ -99,5 +101,10 @@ export const api = {
     list: (from: string, to: string) => request<Check[]>("GET", `/checks?from=${from}&to=${to}`),
     mark: (habitId: number, day: string) => request<void>("PUT", `/checks/${habitId}/${day}`),
     unmark: (habitId: number, day: string) => request<void>("DELETE", `/checks/${habitId}/${day}`),
+  },
+
+  goals: {
+    /** Metas vigentes na data (o último dia da semana exibida). */
+    list: (at: string) => request<Goal[]>("GET", `/goals?at=${at}`),
   },
 };

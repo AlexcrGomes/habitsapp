@@ -28,6 +28,7 @@ class IsolationIT extends IntegrationTest {
 
         long ativo = createHabit(a, "Ler");
         long arquivado = createHabit(a, "Correr");
+        perform(a, patch("/api/habits/" + ativo), Map.of("name", "Ler", "emoji", "", "goal", 3)).andExpect(status().isOk());
         perform(a, put("/api/checks/" + ativo + "/" + TODAY)).andExpect(status().isNoContent());
         perform(a, post("/api/habits/" + arquivado + "/archive")).andExpect(status().isOk());
         perform(a, put("/api/me/settings"), Map.of("weekMode", "calendar")).andExpect(status().isOk());
@@ -36,12 +37,14 @@ class IsolationIT extends IntegrationTest {
         perform(b, get("/api/habits")).andExpect(jsonPath("$", hasSize(0)));
         perform(b, get("/api/checks").param("from", TODAY.minusDays(6).toString()).param("to", TODAY.toString()))
             .andExpect(jsonPath("$", hasSize(0)));
+        perform(b, get("/api/goals").param("at", TODAY.toString())).andExpect(jsonPath("$", hasSize(0)));
         perform(b, get("/api/auth/me"))
             .andExpect(jsonPath("$.id").value(b.userId()))
             .andExpect(jsonPath("$.weekMode").value("rolling"));
 
         // Escrita: toda rota com id de A responde 404
         perform(b, patch("/api/habits/" + ativo), Map.of("name", "Invadido", "emoji", "")).andExpect(status().isNotFound());
+        perform(b, patch("/api/habits/" + ativo), Map.of("name", "Ler", "emoji", "", "goal", 7)).andExpect(status().isNotFound());
         perform(b, post("/api/habits/" + ativo + "/archive")).andExpect(status().isNotFound());
         perform(b, post("/api/habits/" + arquivado + "/restore")).andExpect(status().isNotFound());
         perform(b, delete("/api/habits/" + arquivado)).andExpect(status().isNotFound());
@@ -56,7 +59,11 @@ class IsolationIT extends IntegrationTest {
         // Nada de A mudou
         perform(a, get("/api/habits"))
             .andExpect(jsonPath("$[*].name", contains("Ler", "Correr")))
-            .andExpect(jsonPath("$[1].archived").value(true));
+            .andExpect(jsonPath("$[1].archived").value(true))
+            .andExpect(jsonPath("$[0].goal").value(3));
+        perform(a, get("/api/goals").param("at", TODAY.toString()))
+            .andExpect(jsonPath("$[*].habitId", contains((int) ativo)))
+            .andExpect(jsonPath("$[0].daysPerWeek").value(3));
         perform(a, get("/api/checks").param("from", TODAY.toString()).param("to", TODAY.toString()))
             .andExpect(jsonPath("$[*].habitId", contains((int) ativo)));
         perform(a, get("/api/auth/me")).andExpect(jsonPath("$.weekMode").value("calendar"));

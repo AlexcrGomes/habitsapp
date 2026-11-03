@@ -7,7 +7,7 @@ import { WeekGrid } from "./WeekGrid";
 
 describe("WeekGrid", () => {
   const today = "2026-10-28"; // quarta-feira
-  const habits = [{ id: 1, name: "Ler", emoji: "📚", archived: false }];
+  const habits = [{ id: 1, name: "Ler", emoji: "📚", archived: false, goal: null }];
 
   it("bloqueia dias futuros e mostra hoje destacado (modo Dom–Sáb)", () => {
     render(<WeekGrid days={visibleDays("calendar", 0, today)} today={today} habits={habits}
