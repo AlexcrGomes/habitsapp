@@ -22,6 +22,15 @@ cd web && npm test            # testes do frontend (Vitest)
 - A API também fica em `127.0.0.1:8081` para `npm run dev` no `web/` (proxy do Vite).
 - No PowerShell, argumentos `-D…` do Maven precisam de aspas: `'-Dit.test=AuthIT'`.
 
+## Publicação
+
+- Produção = `docker-compose.yml` + `docker-compose.prod.yml` (Caddy com HTTPS na frente;
+  banco e API sem porta exposta). Passo a passo: [`docs/deploy.md`](docs/deploy.md).
+- Merge na `main` → `.github/workflows/deploy.yml` roda os testes e, se passarem, executa
+  `scripts/deploy.sh` na VM por SSH. Não mexa no `docker-compose.yml` de forma que quebre
+  produção sem testar o compose combinado.
+- Nunca use `down -v` em produção: apaga os dados dos usuários.
+
 ## Metodologia: Spec Driven Development (GitHub Spec Kit)
 
 Este repositório segue SDD. Guia completo: [`docs/sdd-guia.md`](docs/sdd-guia.md).

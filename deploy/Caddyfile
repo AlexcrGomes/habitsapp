@@ -1,0 +1,11 @@
+# HTTPS automático (Let's Encrypt) para o domínio do .env; http:// redireciona para https://
+{$HABITS_DOMAIN} {
+	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	reverse_proxy web:80
+}
