@@ -31,6 +31,7 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 004 | [Semana automática com registro retroativo](../specs/004-calendario-semanal/spec.md) | Implementada |
 | 005 | [Contas de usuário com dados no servidor](../specs/005-contas-e-servidor/spec.md) | Implementada |
 | 006 | [Metas semanais por hábito](../specs/006-metas-semanais/spec.md) | Implementada |
+| 007 | [Atualizar dependências vulneráveis](../specs/007-atualizar-dependencias/spec.md) | Implementada |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
 >
