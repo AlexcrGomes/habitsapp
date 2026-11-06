@@ -50,6 +50,11 @@ scripts/api-mvn.sh verify   # API (sobe um PostgreSQL de teste com Testcontainer
 cd web && npm install && npm test
 ```
 
+## 🌐 Publicação
+
+O app pode ser publicado de graça (Oracle Cloud Always Free + DuckDNS + HTTPS), com
+publicação automática a cada merge na `main`. Passo a passo em [docs/deploy.md](docs/deploy.md).
+
 ## 🔖 Layout
 
 Você pode visualizar o layout do projeto através [DESSE LINK](https://www.figma.com/community/file/1195327109778210238). É necessário ter conta no [Figma](https://figma.com) para acessá-lo.
