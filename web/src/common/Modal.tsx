@@ -6,11 +6,14 @@ interface ModalProps {
   labelledBy: string;
   /** Para onde levar o foco se o botão que abriu o diálogo não existir mais (ex.: hábito arquivado). */
   fallbackFocus?: string;
+  className?: string;
+  /** Marca o diálogo como componente do design system (components/ui/dialog). */
+  slot?: string;
   children: ReactNode;
 }
 
 /** <dialog> nativo: foco preso no modal e Esc fecha. O conteúdo só é montado aberto (estado novo a cada abertura). */
-export function Modal({ open, onClose, labelledBy, fallbackFocus, children }: ModalProps) {
+export function Modal({ open, onClose, labelledBy, fallbackFocus, className, slot, children }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -33,6 +36,8 @@ export function Modal({ open, onClose, labelledBy, fallbackFocus, children }: Mo
   return (
     <dialog
       ref={ref}
+      className={className}
+      data-slot={slot}
       aria-labelledby={labelledBy}
       onCancel={(event) => {
         event.preventDefault();

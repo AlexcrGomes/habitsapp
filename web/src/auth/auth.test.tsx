@@ -111,4 +111,21 @@ describe("login e cadastro", () => {
     expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Sair" })).toBeInTheDocument();
   });
+
+  it("login a partir de um favorito de /arquivados abre os Arquivados", async () => {
+    window.history.replaceState(null, "", "/arquivados");
+    mockApi({
+      "GET /api/auth/me": [unauthenticated],
+      "POST /api/auth/login": [{ status: 200, body: { id: 1, name: "Ana", email: "ana@teste.com", weekMode: "rolling" } }],
+      "GET /api/habits": [{ status: 200, body: [] }],
+    });
+    render(<App />);
+
+    await userEvent.type(await screen.findByLabelText("E-mail"), "ana@teste.com");
+    await userEvent.type(screen.getByLabelText("Senha"), "senha-segura");
+    await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    expect(await screen.findByRole("heading", { name: "Hábitos arquivados" })).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/arquivados");
+  });
 });

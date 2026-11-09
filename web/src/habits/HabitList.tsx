@@ -1,8 +1,11 @@
+import { Check, ChevronDown, ChevronUp, GripVertical, Pencil } from "lucide-react";
 import { useLayoutEffect, useRef, type PointerEvent } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Habit } from "../api/types";
 import { GoalBar } from "../goals/GoalBar";
 import { type Goals, doneCount } from "../goals/progress";
-import { MAX_ACTIVE, habitSymbol } from "./rules";
+import { habitSymbol } from "./rules";
 
 interface HabitListProps {
   habits: Habit[];
@@ -10,10 +13,7 @@ interface HabitListProps {
   days: string[];
   checks: Set<string>;
   goals: Goals;
-  archivedCount: number;
-  onNew: () => void;
   onEdit: (habit: Habit) => void;
-  onOpenArchived: () => void;
   onMove: (id: number, toIndex: number) => void;
 }
 
@@ -25,11 +25,11 @@ interface DragState {
   toIndex: number | null;
 }
 
-export function HabitList({ habits, days, checks, goals, archivedCount, onNew, onEdit, onOpenArchived, onMove }: HabitListProps) {
+/** "Novo hábito" e "Arquivados" ficam na navegação principal (spec 009). */
+export function HabitList({ habits, days, checks, goals, onEdit, onMove }: HabitListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const drag = useRef<DragState | null>(null);
   const pendingFocus = useRef<{ id: number; direction: "up" | "down" } | null>(null);
-  const limitReached = habits.length >= MAX_ACTIVE;
 
   // Depois de mover com ↑/↓ o foco continua no mesmo botão; se ele ficou desabilitado, vai para o outro
   useLayoutEffect(() => {
@@ -89,39 +89,60 @@ export function HabitList({ habits, days, checks, goals, archivedCount, onNew, o
   }
 
   return (
-    <div className="habits-column">
-      <ul className="habits" ref={listRef} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
-        {habits.map((habit, index) => (
-          <li key={habit.id} className="habit" data-id={habit.id}>
-            <span className="habit-handle" title="Arrastar para reordenar" aria-hidden="true"
-              onPointerDown={(event) => startDrag(event, habit)}>⠿</span>
-            <span className="habit-symbol" aria-hidden="true">{habitSymbol(habit)}</span>
-            <span className="habit-info">
-              <span className="habit-name" title={habit.name}>{habit.name}</span>
-              {goals.has(habit.id) && (
-                <GoalBar name={habit.name} done={doneCount(habit.id, days, checks)} goal={goals.get(habit.id)!} />
-              )}
-            </span>
-            <span className="habit-move">
-              <button type="button" data-action="up" aria-label={`Mover ${habit.name} para cima`}
-                disabled={index === 0} onClick={() => moveByButton(habit, index, "up")}>↑</button>
-              <button type="button" data-action="down" aria-label={`Mover ${habit.name} para baixo`}
-                disabled={index === habits.length - 1} onClick={() => moveByButton(habit, index, "down")}>↓</button>
-            </span>
-            <button type="button" data-action="edit" aria-label={`Editar ${habit.name}`} onClick={() => onEdit(habit)}>✎</button>
-          </li>
-        ))}
+    // Altura das linhas (h-16) e do cabeçalho (mt-14) iguais às da WeekGrid: as linhas ficam alinhadas
+    <div className="w-52 shrink-0 pr-2 sm:w-64 lg:w-72 xl:w-80">
+      <ul className="habits mt-14" ref={listRef} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+        {habits.map((habit, index) => {
+          const goal = goals.get(habit.id);
+          const done = goal ? Math.min(doneCount(habit.id, days, checks), goal) : 0;
+          return (
+            <li key={habit.id} className="habit flex h-16 items-center gap-1.5 border-t border-slate-100 pr-1 sm:gap-2.5" data-id={habit.id}>
+              <span className="habit-handle grid h-full cursor-grab touch-none select-none place-items-center px-0.5 text-slate-400 hover:text-slate-600"
+                title="Arrastar para reordenar" aria-hidden="true" onPointerDown={(event) => startDrag(event, habit)}>
+                <GripVertical className="size-4" />
+              </span>
+              <span className="grid size-8 shrink-0 place-items-center rounded-md bg-brand-50 text-base ring-1 ring-inset ring-brand-100 sm:size-10 sm:text-lg"
+                aria-hidden="true">
+                {habitSymbol(habit)}
+              </span>
+              <span className="@container flex min-w-0 flex-1 flex-col gap-1.5">
+                <span className="truncate text-sm font-medium text-ink" title={habit.name}>{habit.name}</span>
+                {goal !== undefined && (
+                  <span className="flex items-center gap-2">
+                    <GoalBar name={habit.name} done={doneCount(habit.id, days, checks)} goal={goal} />
+                    {done === goal ? (
+                      <Badge variant="success" aria-hidden="true" className="shrink-0 px-1.5">
+                        <Check />
+                        <span className="hidden @[9rem]:inline">Meta atingida</span>
+                      </Badge>
+                    ) : (
+                      <Badge aria-hidden="true" className="shrink-0 px-1.5 tabular-nums">{done}/{goal}</Badge>
+                    )}
+                  </span>
+                )}
+              </span>
+              <span className="habit-move flex flex-col">
+                <Button variant="ghost" size="icon" className="size-6" data-action="up" aria-label={`Mover ${habit.name} para cima`}
+                  disabled={index === 0} onClick={() => moveByButton(habit, index, "up")}>
+                  <ChevronUp aria-hidden="true" />
+                </Button>
+                <Button variant="ghost" size="icon" className="size-6" data-action="down" aria-label={`Mover ${habit.name} para baixo`}
+                  disabled={index === habits.length - 1} onClick={() => moveByButton(habit, index, "down")}>
+                  <ChevronDown aria-hidden="true" />
+                </Button>
+              </span>
+              <Button variant="ghost" size="icon" className="size-8" data-action="edit" aria-label={`Editar ${habit.name}`} title="Editar"
+                onClick={() => onEdit(habit)}>
+                <Pencil aria-hidden="true" />
+              </Button>
+            </li>
+          );
+        })}
       </ul>
 
-      <div className="habits-actions">
-        {habits.length === 0 && <p className="habits-empty">Crie seu primeiro hábito</p>}
-        <button type="button" data-action="new" disabled={limitReached} onClick={onNew}>
-          {limitReached ? `Limite de ${MAX_ACTIVE} hábitos ativos` : "+ Novo hábito"}
-        </button>
-        {archivedCount > 0 && (
-          <button type="button" data-action="archived" onClick={onOpenArchived}>Arquivados ({archivedCount})</button>
-        )}
-      </div>
+      {habits.length === 0 && (
+        <p className="border-t border-slate-100 py-5 pl-2 text-sm text-slate-500">Crie seu primeiro hábito</p>
+      )}
     </div>
   );
 }

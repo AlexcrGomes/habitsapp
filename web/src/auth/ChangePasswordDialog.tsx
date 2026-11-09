@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ApiError, api } from "../api/client";
-import { Modal } from "../common/Modal";
 import { MIN_PASSWORD } from "../habits/rules";
 
 interface ChangePasswordDialogProps {
@@ -11,9 +14,9 @@ interface ChangePasswordDialogProps {
 
 export function ChangePasswordDialog(props: ChangePasswordDialogProps) {
   return (
-    <Modal open={props.open} onClose={props.onClose} labelledBy="password-dialog-title">
+    <Dialog open={props.open} onClose={props.onClose} labelledBy="password-dialog-title">
       <ChangePasswordForm {...props} />
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -41,21 +44,28 @@ function ChangePasswordForm({ onClose, onChanged }: ChangePasswordDialogProps) {
 
   return (
     <form onSubmit={submit} noValidate>
-      <h2 id="password-dialog-title">Trocar senha</h2>
+      <DialogHeader>
+        <DialogTitle id="password-dialog-title">Trocar senha</DialogTitle>
+      </DialogHeader>
 
-      <label htmlFor="current-password">Senha atual</label>
-      <input type="password" id="current-password" autoComplete="current-password" value={current}
-        onChange={(e) => setCurrent(e.target.value)} />
-
-      <label htmlFor="new-password">Nova senha (mínimo {MIN_PASSWORD} caracteres)</label>
-      <input type="password" id="new-password" autoComplete="new-password" value={next}
-        onChange={(e) => setNext(e.target.value)} />
-
-      <p className="dialog-error" role="alert">{error}</p>
-      <div className="dialog-actions">
-        <button type="button" onClick={onClose}>Cancelar</button>
-        <button type="submit" className="primary" disabled={busy}>Salvar</button>
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="current-password">Senha atual</Label>
+          <Input type="password" id="current-password" autoComplete="current-password" value={current}
+            onChange={(e) => setCurrent(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="new-password">Nova senha (mínimo {MIN_PASSWORD} caracteres)</Label>
+          <Input type="password" id="new-password" autoComplete="new-password" value={next}
+            onChange={(e) => setNext(e.target.value)} />
+        </div>
       </div>
+
+      <p className="mt-3 min-h-5 text-sm text-danger" role="alert">{error}</p>
+      <DialogFooter>
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button type="submit" variant="primary" disabled={busy}>Salvar</Button>
+      </DialogFooter>
     </form>
   );
 }
