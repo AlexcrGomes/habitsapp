@@ -1,4 +1,10 @@
 import { useState, type FormEvent } from "react";
+import { AuthLayout } from "@/components/AuthLayout";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ApiError } from "../api/client";
 import { useAuth } from "./AuthContext";
 
@@ -22,27 +28,33 @@ export function LoginPage({ onRegister }: { onRegister: () => void }) {
   }
 
   return (
-    <main className="auth-page">
-      <img src="/logo.svg" alt="Logomarca do aplicativo habits" />
-      <form className="auth-card" onSubmit={submit} noValidate aria-labelledby="login-title">
-        <h1 id="login-title">Entrar</h1>
-        {notice && <p className="auth-notice" role="status">{notice}</p>}
+    <AuthLayout>
+      <Card className="p-6 shadow-sm sm:p-8">
+        <form onSubmit={submit} noValidate aria-labelledby="login-title">
+          <h1 id="login-title" className="text-2xl font-semibold tracking-tight text-ink">Entrar</h1>
+          {notice && <Alert className="mt-4" role="status">{notice}</Alert>}
 
-        <label htmlFor="login-email">E-mail</label>
-        <input id="login-email" type="email" autoComplete="email" value={email}
-          onChange={(e) => setEmail(e.target.value)} />
+          <div className="mt-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="login-email">E-mail</Label>
+              <Input id="login-email" type="email" autoComplete="email" value={email}
+                onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="login-password">Senha</Label>
+              <Input id="login-password" type="password" autoComplete="current-password" value={password}
+                onChange={(e) => setPassword(e.target.value)} />
+            </div>
+          </div>
 
-        <label htmlFor="login-password">Senha</label>
-        <input id="login-password" type="password" autoComplete="current-password" value={password}
-          onChange={(e) => setPassword(e.target.value)} />
+          <p className="mt-3 min-h-5 text-sm text-danger" role="alert">{error}</p>
 
-        <p className="form-error" role="alert">{error}</p>
-
-        <button type="submit" className="primary" disabled={busy}>Entrar</button>
-        <p className="auth-switch">
-          Não tem conta? <button type="button" className="link" onClick={onRegister}>Criar conta</button>
-        </p>
-      </form>
-    </main>
+          <Button type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={busy}>Entrar</Button>
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Não tem conta? <Button variant="link" onClick={onRegister}>Criar conta</Button>
+          </p>
+        </form>
+      </Card>
+    </AuthLayout>
   );
 }

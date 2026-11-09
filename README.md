@@ -13,7 +13,7 @@ Utilizando tecnologias WEB está aplicação permite o rastreamento de hábitos.
 <br>
 
 <p align="center">
-  <img alt="projeto Habits" src="preview.png" width="100%">
+  <img alt="Tela Semana do Habits: hábitos com metas e dias marcados em azul" src="preview.png" width="100%">
 </p>
 
 ## 🚀 Tecnologias
@@ -21,10 +21,10 @@ Utilizando tecnologias WEB está aplicação permite o rastreamento de hábitos.
 Esse projeto foi desenvolvido com as seguintes tecnologias:
 
 - React + TypeScript (Vite) e Nginx
+- Tailwind CSS com componentes no estilo shadcn/ui e ícones Lucide
 - Java 21 + Spring Boot
 - PostgreSQL
 - Docker Compose
-- Figma
 
 ## 💻 Projeto
 
@@ -57,7 +57,10 @@ publicação automática a cada merge na `main`. Passo a passo em [docs/deploy.m
 
 ## 🔖 Layout
 
-Você pode visualizar o layout do projeto através [DESSE LINK](https://www.figma.com/community/file/1195327109778210238). É necessário ter conta no [Figma](https://figma.com) para acessá-lo.
+Tema claro com uma paleta de azuis e uma logo de blocos que formam o "H" de Habits. No
+computador, a navegação fica num menu lateral; no celular, numa barra inferior. Os tokens
+de cor, cantos e sombras ficam em [`web/src/index.css`](web/src/index.css) e os componentes
+em [`web/src/components/`](web/src/components/).
 
 ## 🧭 Desenvolvimento (Spec Driven)
 

@@ -1,6 +1,6 @@
 # Constituição do Projeto Habits
 
-**Versão**: 2.0.0 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-11-01
+**Versão**: 2.1.1 | **Ratificada em**: 2026-10-30 | **Última emenda**: 2026-11-09
 
 Esta constituição define os princípios não negociáveis do projeto. Toda spec, plano e
 implementação deve estar em conformidade com ela. Em caso de conflito entre um documento
@@ -59,7 +59,9 @@ Os dados ficam no PostgreSQL e pertencem a um usuário.
   mensagens de erro vindas da API.
 - Imagens com `alt` descritivo; elementos interativos acessíveis por teclado e com foco
   visível.
-- Manter contraste adequado no tema escuro (fundo `#09090A`).
+- Contraste mínimo nível AA no tema vigente (ver **Restrições técnicas**): 4,5:1 em texto
+  normal; 3:1 em texto grande, ícones e bordas de controles.
+- Animações curtas e desativadas quando o sistema pede "reduzir movimento".
 
 **Por quê**: o público é brasileiro e o app deve ser utilizável por qualquer pessoa.
 
@@ -108,7 +110,8 @@ Os dados ficam no PostgreSQL e pertencem a um usuário.
 | Orquestração | Docker Compose: `db`, `api`, `web` |
 | Fuso de referência | `America/Sao_Paulo` |
 | Testes | JUnit + Testcontainers (API); Vitest + Testing Library (frontend) |
-| Fontes | Google Fonts: Inter 600, Roboto Mono 700 |
+| Tema | Claro, paleta de azuis (spec 009); tema escuro previsto em spec futura |
+| Fontes | Google Fonts: Inter 400–700 (números com `tabular-nums`) |
 
 ---
 
@@ -130,3 +133,5 @@ Os dados ficam no PostgreSQL e pertencem a um usuário.
 | 1.0.0 | 2026-10-30 | Versão inicial |
 | 1.1.0 | 2026-10-31 | Princípio III: chave vigente movida para Restrições técnicas e regra de nunca apagar/sobrescrever chaves antigas; restrições técnicas atualizadas (sem NLWSetup, chave `habits@v3`) |
 | 2.0.0 | 2026-11-01 | Nova arquitetura (spec 005): II redefinido para a stack React + Spring Boot + PostgreSQL + Docker; III redefinido para dados no servidor isolados por usuário e migrações Flyway; VI passa a exigir testes automatizados; novo VII (Segurança); restrições técnicas reescritas |
+| 2.1.0 | 2026-11-09 | Novo design system (spec 009): IV troca "contraste no tema escuro (fundo `#09090A`)" por contraste AA no tema vigente e passa a exigir respeito a "reduzir movimento"; restrições técnicas ganham a linha Tema (claro, azuis) e as fontes passam a ser definidas no plan da 009 |
+| 2.1.1 | 2026-11-09 | Restrições técnicas: fontes passam a ser Inter 400–700 (sai a Roboto Mono), conforme o plan da spec 009 |

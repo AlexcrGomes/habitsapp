@@ -1,4 +1,9 @@
 import { useState, type FormEvent } from "react";
+import { AuthLayout } from "@/components/AuthLayout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ApiError } from "../api/client";
 import { MIN_PASSWORD } from "../habits/rules";
 import { useAuth } from "./AuthContext";
@@ -44,34 +49,37 @@ export function RegisterPage({ onLogin }: { onLogin: () => void }) {
     const id = `register-${field}`;
     const fieldError = fieldErrors[field];
     return (
-      <>
-        <label htmlFor={id}>{label}</label>
-        <input id={id} type={type} autoComplete={autoComplete} value={values[field]}
+      <div className="space-y-1.5">
+        <Label htmlFor={id}>{label}</Label>
+        <Input id={id} type={type} autoComplete={autoComplete} value={values[field]}
           aria-invalid={fieldError ? true : undefined}
           aria-describedby={fieldError ? `${id}-error` : undefined}
           onChange={(e) => change(field, e.target.value)} />
-        {fieldError && <p id={`${id}-error`} className="field-error">{fieldError}</p>}
-      </>
+        {fieldError && <p id={`${id}-error`} className="text-sm text-danger">{fieldError}</p>}
+      </div>
     );
   }
 
   return (
-    <main className="auth-page">
-      <img src="/logo.svg" alt="Logomarca do aplicativo habits" />
-      <form className="auth-card" onSubmit={submit} noValidate aria-labelledby="register-title">
-        <h1 id="register-title">Criar conta</h1>
+    <AuthLayout>
+      <Card className="p-6 shadow-sm sm:p-8">
+        <form onSubmit={submit} noValidate aria-labelledby="register-title">
+          <h1 id="register-title" className="text-2xl font-semibold tracking-tight text-ink">Criar conta</h1>
 
-        {input("name", "Nome", "text", "name")}
-        {input("email", "E-mail", "email", "email")}
-        {input("password", `Senha (mínimo ${MIN_PASSWORD} caracteres)`, "password", "new-password")}
+          <div className="mt-6 space-y-4">
+            {input("name", "Nome", "text", "name")}
+            {input("email", "E-mail", "email", "email")}
+            {input("password", `Senha (mínimo ${MIN_PASSWORD} caracteres)`, "password", "new-password")}
+          </div>
 
-        <p className="form-error" role="alert">{error}</p>
+          <p className="mt-3 min-h-5 text-sm text-danger" role="alert">{error}</p>
 
-        <button type="submit" className="primary" disabled={busy}>Criar conta</button>
-        <p className="auth-switch">
-          Já tem conta? <button type="button" className="link" onClick={onLogin}>Entrar</button>
-        </p>
-      </form>
-    </main>
+          <Button type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={busy}>Criar conta</Button>
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Já tem conta? <Button variant="link" onClick={onLogin}>Entrar</Button>
+          </p>
+        </form>
+      </Card>
+    </AuthLayout>
   );
 }

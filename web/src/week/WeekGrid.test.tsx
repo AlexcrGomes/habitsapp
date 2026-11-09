@@ -35,4 +35,19 @@ describe("WeekGrid", () => {
     await userEvent.click(screen.getByRole("checkbox", { name: "Ler em 25/10" }));
     expect(onToggle).toHaveBeenCalledWith(1, "2026-10-25", true);
   });
+
+  it("só a caixa recém-marcada anima o encaixe (spec 009, US5)", async () => {
+    const days = visibleDays("rolling", 0, today);
+    const props = { days, today, habits, onToggle: () => {} };
+    const { rerender } = render(<WeekGrid {...props} checks={new Set([checkKey(1, "2026-10-26")])} />);
+
+    const loaded = screen.getByRole("checkbox", { name: "Ler em 26/10" });
+    const clicked = screen.getByRole("checkbox", { name: "Ler em 25/10" });
+    expect(loaded.className).not.toContain("animate-block-in");
+
+    await userEvent.click(clicked);
+    rerender(<WeekGrid {...props} checks={new Set([checkKey(1, "2026-10-26"), checkKey(1, "2026-10-25")])} />);
+    expect(clicked.className).toContain("motion-safe:animate-block-in");
+    expect(loaded.className).not.toContain("animate-block-in");
+  });
 });

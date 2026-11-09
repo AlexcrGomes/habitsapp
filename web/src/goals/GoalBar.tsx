@@ -1,3 +1,4 @@
+import { cn } from "@/lib/cn";
 import { habitProgress } from "./progress";
 
 interface GoalBarProps {
@@ -13,9 +14,13 @@ export function GoalBar({ name, done, goal }: GoalBarProps) {
   const text = `${name}: ${value} de ${goal} ${goal === 1 ? "dia" : "dias"}${reached ? ", meta atingida" : ""}`;
 
   return (
-    <span className={reached ? "goal-bar reached" : "goal-bar"} role="progressbar" aria-label={`Meta de ${name}`}
-      aria-valuemin={0} aria-valuemax={goal} aria-valuenow={value} aria-valuetext={text} title={text}>
-      <span className="goal-bar-fill" style={{ width: `${habitProgress(done, goal) * 100}%` }} />
+    <span className="block h-1.5 w-full max-w-28 min-w-6 overflow-hidden rounded-full bg-slate-200" role="progressbar"
+      aria-label={`Meta de ${name}`} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={value} aria-valuetext={text} title={text}>
+      <span
+        className={cn("block h-full rounded-full transition-[width] duration-200 motion-reduce:transition-none",
+          reached ? "bg-success" : "bg-brand-600")}
+        style={{ width: `${habitProgress(done, goal) * 100}%` }}
+      />
     </span>
   );
 }

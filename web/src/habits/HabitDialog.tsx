@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { ApiError } from "../api/client";
 import type { Habit } from "../api/types";
-import { Modal } from "../common/Modal";
 import { MAX_GOAL, MIN_GOAL } from "../goals/progress";
 import { MAX_NAME, habitNameError } from "./rules";
 
@@ -20,9 +24,9 @@ interface HabitDialogProps {
 
 export function HabitDialog(props: HabitDialogProps) {
   return (
-    <Modal open={props.open} onClose={props.onClose} labelledBy="habit-dialog-title" fallbackFocus='[data-action="new"]'>
+    <Dialog open={props.open} onClose={props.onClose} labelledBy="habit-dialog-title" fallbackFocus='[data-action="new"]'>
       <HabitForm {...props} />
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -67,38 +71,48 @@ function HabitForm({ habit, onClose, onSave, onRestore, onArchive }: HabitDialog
 
   return (
     <form onSubmit={submit} noValidate>
-      <h2 id="habit-dialog-title">{habit ? "Editar hábito" : "Novo hábito"}</h2>
+      <DialogHeader>
+        <DialogTitle id="habit-dialog-title">{habit ? "Editar hábito" : "Novo hábito"}</DialogTitle>
+      </DialogHeader>
 
-      <label htmlFor="habit-name">Nome</label>
-      <input type="text" id="habit-name" maxLength={MAX_NAME} autoComplete="off" value={name}
-        aria-describedby="habit-name-count" onChange={(e) => setName(e.target.value)} />
-      <small id="habit-name-count" className="dialog-hint">{name.length}/{MAX_NAME}</small>
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="habit-name">Nome</Label>
+          <Input id="habit-name" maxLength={MAX_NAME} autoComplete="off" value={name}
+            aria-describedby="habit-name-count" onChange={(e) => setName(e.target.value)} />
+          <small id="habit-name-count" className="block text-right text-xs tabular-nums text-slate-500">{name.length}/{MAX_NAME}</small>
+        </div>
 
-      <label htmlFor="habit-emoji">Emoji (opcional)</label>
-      <input type="text" id="habit-emoji" autoComplete="off" placeholder="Ex.: 🧘" value={emoji}
-        onChange={(e) => setEmoji(e.target.value)} />
+        <div className="space-y-1.5">
+          <Label htmlFor="habit-emoji">Emoji (opcional)</Label>
+          <Input id="habit-emoji" autoComplete="off" placeholder="Ex.: 🧘" value={emoji}
+            onChange={(e) => setEmoji(e.target.value)} />
+        </div>
 
-      <label htmlFor="habit-goal">Meta semanal</label>
-      <select id="habit-goal" value={goal} aria-describedby="habit-goal-hint" onChange={(e) => setGoal(e.target.value)}>
-        <option value="">Sem meta</option>
-        {GOAL_OPTIONS.map((days) => (
-          <option key={days} value={days}>{days} {days === 1 ? "dia" : "dias"} por semana</option>
-        ))}
-      </select>
-      <small id="habit-goal-hint" className="dialog-hint">Uma meta nova vale a partir de hoje.</small>
+        <div className="space-y-1.5">
+          <Label htmlFor="habit-goal">Meta semanal</Label>
+          <Select id="habit-goal" value={goal} aria-describedby="habit-goal-hint" onChange={(e) => setGoal(e.target.value)}>
+            <option value="">Sem meta</option>
+            {GOAL_OPTIONS.map((days) => (
+              <option key={days} value={days}>{days} {days === 1 ? "dia" : "dias"} por semana</option>
+            ))}
+          </Select>
+          <small id="habit-goal-hint" className="block text-xs text-slate-500">Uma meta nova vale a partir de hoje.</small>
+        </div>
+      </div>
 
-      <p className="dialog-error" role="alert">{error}</p>
+      <p className="mt-3 min-h-5 text-sm text-danger" role="alert">{error}</p>
       {conflictId !== null && (
-        <button type="button" disabled={busy} onClick={() => run(() => onRestore(conflictId))}>
+        <Button className="mt-2" disabled={busy} onClick={() => run(() => onRestore(conflictId))}>
           Restaurar o arquivado
-        </button>
+        </Button>
       )}
 
-      <div className="dialog-actions">
-        {habit && <button type="button" className="dialog-start" disabled={busy} onClick={archive}>Arquivar</button>}
-        <button type="button" onClick={onClose}>Cancelar</button>
-        <button type="submit" className="primary" disabled={busy}>Salvar</button>
-      </div>
+      <DialogFooter>
+        {habit && <Button variant="danger" className="sm:mr-auto" disabled={busy} onClick={archive}>Arquivar</Button>}
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button type="submit" variant="primary" disabled={busy}>Salvar</Button>
+      </DialogFooter>
     </form>
   );
 }

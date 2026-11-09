@@ -44,8 +44,8 @@ describe("barra da meta", () => {
   it("só hábitos com meta têm barra, limitada à meta e com texto acessível", () => {
     const days = visibleDays("rolling", 0, today);
     const checks = new Set(days.slice(0, 5).map((day) => checkKey(1, day)));
-    render(<HabitList habits={habits} days={days} checks={checks} goals={new Map([[1, 4]])} archivedCount={0}
-      onNew={() => {}} onEdit={() => {}} onOpenArchived={() => {}} onMove={() => {}} />);
+    render(<HabitList habits={habits} days={days} checks={checks} goals={new Map([[1, 4]])}
+      onEdit={() => {}} onMove={() => {}} />);
 
     const bars = screen.getAllByRole("progressbar");
     expect(bars).toHaveLength(1);
