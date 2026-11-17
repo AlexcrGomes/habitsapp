@@ -52,8 +52,9 @@ cd web && npm install && npm test
 
 ## 🌐 Publicação
 
-O app pode ser publicado de graça (Oracle Cloud Always Free + DuckDNS + HTTPS), com
-publicação automática a cada merge na `main`. Passo a passo em [docs/deploy.md](docs/deploy.md).
+O app é publicado em `habits.<nome>.duckdns.org`, num servidor AWS Lightsail compartilhado com
+outros apps (repositório [servidor-apps](https://github.com/AlexcrGomes/servidor-apps), que
+cuida do HTTPS), com publicação automática a cada merge na `main`. Passo a passo em [docs/deploy.md](docs/deploy.md).
 
 ## 🔖 Layout
 

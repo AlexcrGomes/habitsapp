@@ -1,31 +1,22 @@
-# Produção (spec 008): usado junto com o docker-compose.yml
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-# O Caddy é o único serviço exposto à internet (80/443) e cuida do HTTPS.
+# Produção (spec 008): usado junto com o docker-compose.yml, no servidor compartilhado.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# O HTTPS e as portas 80/443 ficam com o proxy do repositório servidor-apps (Caddy), que
+# encaminha habits.<domínio> para o web pela rede externa "proxy". Nenhum serviço do Habits
+# publica porta no servidor, e db/api ficam só na rede interna do projeto.
 services:
-  caddy:
-    image: caddy:2.10.2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      HABITS_DOMAIN: ${HABITS_DOMAIN:?defina HABITS_DOMAIN no .env}
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      # Certificados guardados entre deploys (evita o limite de emissão do Let's Encrypt)
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - web
-
   web:
-    # Só o Caddy fala com o web, pela rede interna
     ports: !reset []
+    networks:
+      default:
+      proxy:
+        # Nome que o Caddyfile do servidor-apps usa: reverse_proxy habits-web:80
+        aliases: [habits-web]
 
   api:
     # Sem a porta 127.0.0.1:8081 do desenvolvimento
     ports: !reset []
 
-volumes:
-  caddy_data:
-  caddy_config:
+networks:
+  proxy:
+    # Criada pelo scripts/server-setup.sh do servidor-apps
+    external: true

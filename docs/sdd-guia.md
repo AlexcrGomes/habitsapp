@@ -32,7 +32,7 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 005 | [Contas de usuário com dados no servidor](../specs/005-contas-e-servidor/spec.md) | Implementada |
 | 006 | [Metas semanais por hábito](../specs/006-metas-semanais/spec.md) | Implementada |
 | 007 | [Atualizar dependências vulneráveis](../specs/007-atualizar-dependencias/spec.md) | Implementada |
-| 008 | [Publicação gratuita para testes com usuários](../specs/008-publicacao-gratuita/spec.md) | Aprovada |
+| 008 | [Publicação para testes com usuários](../specs/008-publicacao-gratuita/spec.md) | Aprovada (revisão 3: servidor compartilhado na AWS) |
 | 009 | [Novo design system (azul, tema claro) e nova logo](../specs/009-novo-design-system/spec.md) | Implementada |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
