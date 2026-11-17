@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Publica a versão atual da main no servidor (spec 008). Roda NA VM, como o usuário deploy.
-# Chamado pelo GitHub Actions por SSH; também pode ser rodado à mão.
+# Publica a versão atual da main no servidor compartilhado (spec 008). Roda NO SERVIDOR, como
+# o usuário deploy. Chamado pelo GitHub Actions por SSH; também pode ser rodado à mão.
+# Só mexe nos contêineres do Habits: o proxy (servidor-apps) e os outros apps não são tocados.
 # Nunca usa "down -v": o volume pgdata (dados dos usuários) só é removido manualmente.
 set -euo pipefail
 
@@ -12,15 +13,31 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 domain="$(grep -E '^HABITS_DOMAIN=' .env | cut -d= -f2-)"
+if [[ -z "$domain" ]]; then
+  echo "HABITS_DOMAIN vazio no .env (ex.: habits.nome.duckdns.org)." >&2
+  exit 1
+fi
+if ! docker network inspect proxy >/dev/null 2>&1; then
+  echo "Rede Docker 'proxy' não encontrada: prepare o servidor pelo repositório servidor-apps." >&2
+  exit 1
+fi
 
 echo "==> Atualizando o código"
 git fetch --quiet origin main
 git reset --quiet --hard origin/main
 git log --oneline -1
 
-echo "==> Construindo e subindo os contêineres"
 compose=(docker compose -f docker-compose.yml -f docker-compose.prod.yml)
-"${compose[@]}" up -d --build --remove-orphans
+
+# Um build de cada vez: com 2 GB de RAM, Maven e Vite juntos (com o app no ar) podem esgotar
+# a memória. A versão antiga continua no ar até a troca.
+echo "==> Construindo a API"
+"${compose[@]}" build api
+echo "==> Construindo o web"
+"${compose[@]}" build web
+
+echo "==> Subindo os contêineres"
+"${compose[@]}" up -d --remove-orphans
 
 echo "==> Aguardando a API responder em https://$domain"
 for _ in $(seq 1 36); do

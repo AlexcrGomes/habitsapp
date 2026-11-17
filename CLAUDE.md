@@ -24,10 +24,13 @@ cd web && npm test            # testes do frontend (Vitest)
 
 ## Publicação
 
-- Produção = `docker-compose.yml` + `docker-compose.prod.yml` (Caddy com HTTPS na frente;
-  banco e API sem porta exposta). Passo a passo: [`docs/deploy.md`](docs/deploy.md).
+- Produção = servidor AWS Lightsail compartilhado (`servidor-apps`: 2 GB, Ohio, créditos do
+  plano gratuito) rodando `docker-compose.yml` + `docker-compose.prod.yml` em
+  `habits.<nome>.duckdns.org`. O HTTPS (Caddy) e a preparação do servidor ficam no repositório
+  `servidor-apps`; aqui o `web` só entra na rede externa `proxy` (apelido `habits-web`), e
+  banco e API não têm porta exposta. Passo a passo: [`docs/deploy.md`](docs/deploy.md).
 - Merge na `main` → `.github/workflows/deploy.yml` roda os testes e, se passarem, executa
-  `scripts/deploy.sh` na VM por SSH. Não mexa no `docker-compose.yml` de forma que quebre
+  `scripts/deploy.sh` no servidor por SSH. Não mexa no `docker-compose.yml` de forma que quebre
   produção sem testar o compose combinado.
 - Nunca use `down -v` em produção: apaga os dados dos usuários.
 
