@@ -51,14 +51,19 @@ apps.
 
 ## Fase 2 — Provedores e servidor (você, com o README do `servidor-apps` e o `docs/deploy.md`)
 
-- [ ] T019 **(você)** Conta AWS no plano gratuito: MFA no usuário raiz, conferir créditos, orçamento mensal de US$ 16 com alertas em 80% e 100%
+- [x] T019 **(você)** Conta AWS no plano gratuito: MFA no usuário raiz, conferir créditos, orçamento mensal de US$ 16 com alertas em 80% e 100%
 - [x] T020 **(você)** Instância Lightsail `servidor-apps` (2 GB, Ubuntu 24.04, Ohio) e IP estático `52.15.99.27` — acesso por SSH conferido em 2026-11-16
-- [ ] T021 **(você)** Porta 443 (HTTPS) no firewall do Lightsail, IPv4 e IPv6
-- [ ] T022 **(você)** Domínio genérico no DuckDNS apontando para o IP estático; conferir que `habits.<nome>.duckdns.org` resolve para o mesmo IP
-- [ ] T023 **(você)** Repositório `servidor-apps` no GitHub; chave SSH do deploy do Habits; `server-setup.sh`; `.env` com `APPS_DOMAIN`; subir o proxy
-- [ ] T024 **(você)** Habits no servidor: clone em `/opt/habitsapp`, `.env`, primeiro `deploy.sh` manual
-- [ ] T025 **(você)** Cadastrar `DEPLOY_HOST`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` nos secrets do GitHub do Habits
-- [ ] **Checkpoint**: `https://habits.<nome>.duckdns.org` abre o app com cadeado
+- [x] T021 **(você)** Porta 443 (HTTPS) no firewall do Lightsail, IPv4 e IPv6
+- [x] T022 **(você)** Domínio genérico no DuckDNS apontando para o IP estático; conferir que `habits.<nome>.duckdns.org` resolve para o mesmo IP — `alexapps.duckdns.org`
+- [x] T023 **(você)** Repositório `servidor-apps` no GitHub; chave SSH do deploy do Habits; `server-setup.sh`; `.env` com `APPS_DOMAIN`; subir o proxy
+- [x] T024 **(você)** Habits no servidor: clone em `/opt/habitsapp`, `.env`, primeiro `deploy.sh` manual — no ar em 2026-11-17
+- [x] T025 **(você)** Cadastrar `DEPLOY_HOST`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` nos secrets do GitHub do Habits
+- [x] **Checkpoint**: `https://habits.<nome>.duckdns.org` abre o app com cadeado
+
+> Conferido de fora em 2026-11-17: `/` → 200, `/api/auth/me` → 401, `http://` → 308 para
+> `https://`, HSTS presente, `https://alexapps.duckdns.org` → 404; portas 5432, 8080 e 8081
+> fechadas. Execução manual do workflow (2026-11-17): testes verdes e "Publicado com sucesso"
+> pelo GitHub Actions.
 
 ## Fase 3 — Verificação e encerramento
 
