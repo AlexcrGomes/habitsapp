@@ -41,8 +41,12 @@ Siga o README do **servidor-apps** até o passo 8 (proxy no ar). Ao final:
 
 ```bash
 ssh servidor-apps
+sudo install -d -o deploy -g deploy /opt/habitsapp
 sudo -u deploy git clone https://github.com/AlexcrGomes/habitsapp.git /opt/habitsapp
 ```
+
+A pasta é criada antes porque `/opt` pertence ao root e o usuário `deploy` não pode criar
+pastas nela.
 
 ## 3. Criar o `.env` de produção (no servidor)
 
@@ -79,6 +83,10 @@ secret*:
 | `DEPLOY_HOST` | o IP estático do servidor (ou `<nome>.duckdns.org`) |
 | `DEPLOY_SSH_KEY` | conteúdo de `~/.ssh/habits_deploy` (a **privada**) |
 | `DEPLOY_KNOWN_HOSTS` | saída de `ssh-keyscan -t ed25519 <o mesmo valor de DEPLOY_HOST>` |
+
+O `DEPLOY_KNOWN_HOSTS` é uma linha no formato `<host> ssh-ed25519 AAAA…`, e o `<host>` precisa
+ser exatamente o valor do `DEPLOY_HOST`. Sem isso o deploy falha com "Host key verification
+failed".
 
 A partir daí, cada merge na `main` roda [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml):
 testes da API e do web → se passarem, `scripts/deploy.sh` no servidor. Se algo falhar, o

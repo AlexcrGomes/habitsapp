@@ -191,6 +191,8 @@ nada é publicado; e-mail do GitHub.
 | O workflow também roda os testes em pull requests (sem publicar) | Mostra no PR se os testes passam antes do merge |
 | Scripts chamados com `bash scripts/…sh` | Não depende do bit de execução no git (repositório editado no Windows) |
 | `HABITS_DOMAIN` obrigatório no compose de produção | Falha clara se o `.env` do servidor estiver incompleto |
+| `docs/deploy.md`: criar `/opt/habitsapp` com dono `deploy` antes do clone (2026-11-17) | `/opt` pertence ao root; o clone como `deploy` falhava com *Permission denied* |
+| `docs/deploy.md`: formato do `DEPLOY_KNOWN_HOSTS` (2026-11-17) | o primeiro deploy pelo Actions falhou com *Host key verification failed*: a linha precisa começar pelo mesmo valor do `DEPLOY_HOST` |
 
 ## Revisão 2 — da Oracle para a AWS Lightsail
 
