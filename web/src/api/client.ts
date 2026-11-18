@@ -1,4 +1,5 @@
-import type { Check, Goal, Habit, User } from "./types";
+import { block } from "../update/blockers";
+import type { Check, Goal, Habit, NotificationSettings, PushDevice, User } from "./types";
 
 /** Erro da API com código estável e mensagem em pt-BR (contrato em specs/005-contas-e-servidor/plan.md). */
 export class ApiError extends Error {
@@ -49,6 +50,16 @@ interface RequestOptions {
 }
 
 export async function request<T>(method: string, path: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
+  // Uma alteração em andamento (ex.: marcação) impede recarregar para a versão nova (spec 011, P17)
+  const release = method === "GET" ? null : block();
+  try {
+    return await perform<T>(method, path, body, options);
+  } finally {
+    release?.();
+  }
+}
+
+async function perform<T>(method: string, path: string, body: unknown, options: RequestOptions): Promise<T> {
   let response = await send(method, path, body);
 
   // Sem cookie XSRF-TOKEN (ex.: apagado): a API recusa com 403. Qualquer GET devolve o cookie; tenta uma vez de novo.
@@ -105,5 +116,14 @@ export const api = {
   goals: {
     /** Metas vigentes na data (o último dia da semana exibida). */
     list: (at: string) => request<Goal[]>("GET", `/goals?at=${at}`),
+  },
+
+  /** Notificações (spec 011). */
+  notifications: {
+    get: () => request<NotificationSettings>("GET", "/notifications"),
+    save: (settings: Pick<NotificationSettings, "reminderTime" | "daily" | "atRisk" | "summary">) =>
+      request<void>("PUT", "/notifications/settings", settings),
+    addDevice: (device: PushDevice) => request<void>("PUT", "/notifications/devices", device),
+    removeDevice: (endpoint: string) => request<void>("DELETE", "/notifications/devices", { endpoint }),
   },
 };

@@ -68,4 +68,37 @@ class IsolationIT extends IntegrationTest {
             .andExpect(jsonPath("$[*].habitId", contains((int) ativo)));
         perform(a, get("/api/auth/me")).andExpect(jsonPath("$.weekMode").value("calendar"));
     }
+
+    /** Spec 011: preferências e aparelhos de notificação são de cada conta. */
+    @Test
+    void notificacoesSaoIsoladasPorUsuario() throws Exception {
+        Session a = newUser();
+        Session b = newUser();
+        String aparelhoDeA = "https://fcm.googleapis.com/fcm/send/" + java.util.UUID.randomUUID();
+        perform(a, put("/api/notifications/devices"), Map.of("endpoint", aparelhoDeA, "keys", Map.of(
+            "p256dh", "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4",
+            "auth", "BTBZMqHH6r4Tts7J_aSIgg"))).andExpect(status().isNoContent());
+        perform(a, put("/api/notifications/settings"),
+            Map.of("reminderTime", "21:15", "daily", false, "atRisk", true, "summary", true))
+            .andExpect(status().isNoContent());
+
+        // B vê os próprios padrões, não as preferências de A
+        perform(b, get("/api/notifications"))
+            .andExpect(jsonPath("$.reminderTime").value("20:00"))
+            .andExpect(jsonPath("$.daily").value(true));
+        // B não desativa o aparelho de A
+        perform(b, delete("/api/notifications/devices"), Map.of("endpoint", aparelhoDeA))
+            .andExpect(status().isNotFound());
+        // B muda as próprias preferências sem mexer nas de A
+        perform(b, put("/api/notifications/settings"),
+            Map.of("reminderTime", "07:00", "daily", true, "atRisk", false, "summary", false))
+            .andExpect(status().isNoContent());
+
+        perform(a, get("/api/notifications"))
+            .andExpect(jsonPath("$.reminderTime").value("21:15"))
+            .andExpect(jsonPath("$.daily").value(false))
+            .andExpect(jsonPath("$.atRisk").value(true));
+        perform(a, delete("/api/notifications/devices"), Map.of("endpoint", aparelhoDeA))
+            .andExpect(status().isNoContent());
+    }
 }

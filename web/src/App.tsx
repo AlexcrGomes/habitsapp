@@ -4,6 +4,8 @@ import { LoginPage } from "./auth/LoginPage";
 import { RegisterPage } from "./auth/RegisterPage";
 import { Loading } from "./components/ui/loading";
 import { AppShell } from "./shell/AppShell";
+import { NotesDialog } from "./update/NotesDialog";
+import { UpdateProvider } from "./update/UpdateProvider";
 
 export function App() {
   return (
@@ -26,9 +28,21 @@ function Screens() {
     if (status === "authenticated") setScreen("login");
   }, [status]);
 
-  if (status === "loading") return <Loading className="justify-center py-16" />;
-  if (user) return <AppShell user={user} />;
-  return screen === "login"
-    ? <LoginPage onRegister={() => setScreen("register")} />
-    : <RegisterPage onLogin={() => setScreen("login")} />;
+  return (
+    // Versão nova (spec 011): aviso, recarga automática e novidades
+    <UpdateProvider status={status}>
+      {status === "loading" ? (
+        <Loading className="justify-center py-16" />
+      ) : user ? (
+        <>
+          <AppShell user={user} />
+          <NotesDialog />
+        </>
+      ) : screen === "login" ? (
+        <LoginPage onRegister={() => setScreen("register")} />
+      ) : (
+        <RegisterPage onLogin={() => setScreen("login")} />
+      )}
+    </UpdateProvider>
+  );
 }

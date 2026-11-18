@@ -6,12 +6,14 @@ import { Alert } from "@/components/ui/alert";
 import { ChangePasswordDialog } from "@/auth/ChangePasswordDialog";
 import { HabitDialog } from "@/habits/HabitDialog";
 import { MAX_ACTIVE } from "@/habits/rules";
+import { syncSubscription } from "@/notifications/push";
 import { useHabits } from "@/habits/useHabits";
 import { AccountPage } from "@/pages/AccountPage";
 import { ArchivedPage } from "@/pages/ArchivedPage";
 import { WeekPage } from "@/pages/WeekPage";
 import { navigate, useRoute } from "@/router";
 import { todayKey, visibleDays } from "@/week/dates";
+import { UpdateBanner } from "@/update/UpdateBanner";
 import { AppNav } from "./AppNav";
 
 type Dialog = { type: "habit"; habit: Habit | null } | { type: "password" } | null;
@@ -54,6 +56,23 @@ export function AppShell({ user }: { user: User }) {
     };
   }, []);
 
+  // Notificações (spec 011): reentrega a inscrição deste aparelho; o toque numa notificação com o
+  // app aberto chega como mensagem do service worker e leva à semana atual, sem recarregar
+  useEffect(() => {
+    void syncSubscription(user.id);
+  }, [user.id]);
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    function onMessage(event: MessageEvent) {
+      if (event.data?.type !== "habits:open") return;
+      setOffset(0);
+      navigate("/");
+    }
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, []);
+
   // Endereço desconhecido (ex.: /xyz) vira o da Semana
   useEffect(() => {
     if (window.location.pathname !== route) navigate(route, { replace: true });
@@ -92,6 +111,7 @@ export function AppShell({ user }: { user: User }) {
       />
 
       <main id="conteudo">
+        <UpdateBanner />
         {notice && (
           <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6 lg:px-10">
             <Alert role="status" variant={notice.tone} closeLabel="Fechar aviso"
@@ -127,7 +147,7 @@ export function AppShell({ user }: { user: User }) {
           />
         )}
         {route === "/conta" && (
-          <AccountPage name={user.name} email={user.email} onChangePassword={openPassword} onLogout={signOut} />
+          <AccountPage userId={user.id} name={user.name} email={user.email} onChangePassword={openPassword} onLogout={signOut} />
         )}
       </main>
 

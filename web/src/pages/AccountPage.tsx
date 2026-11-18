@@ -2,8 +2,10 @@ import { KeyRound, LogOut } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { NotificationSettings } from "@/notifications/NotificationSettings";
 
 interface AccountPageProps {
+  userId: number;
   name: string;
   email: string;
   onChangePassword: () => void;
@@ -11,7 +13,7 @@ interface AccountPageProps {
 }
 
 /** Conta ("/conta"): no celular é o destino "Conta" da barra inferior; no desktop o mesmo fica no menu lateral. */
-export function AccountPage({ name, email, onChangePassword, onLogout }: AccountPageProps) {
+export function AccountPage({ userId, name, email, onChangePassword, onLogout }: AccountPageProps) {
   return (
     <section className="mx-auto max-w-xl px-4 py-8 sm:px-6 lg:py-12">
       <h1 tabIndex={-1} className="mb-6 text-2xl font-semibold tracking-tight text-ink">Minha conta</h1>
@@ -34,6 +36,7 @@ export function AccountPage({ name, email, onChangePassword, onLogout }: Account
           </Button>
         </div>
       </Card>
+      <NotificationSettings userId={userId} />
     </section>
   );
 }

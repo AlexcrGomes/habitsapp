@@ -60,8 +60,26 @@ sudo -u deploy nano /opt/habitsapp/.env
 | `POSTGRES_PASSWORD` | Senha forte gerada no servidor: `openssl rand -base64 32` |
 | `HABITS_COOKIE_SECURE` | `true` |
 | `HABITS_DOMAIN` | `habits.<nome>.duckdns.org` (ex.: `habits.alexapps.duckdns.org`) |
+| `HABITS_VAPID_PUBLIC_KEY` e `HABITS_VAPID_PRIVATE_KEY` | Chaves das notificações (spec 011), geradas **uma vez** no servidor (abaixo) |
+| `HABITS_VAPID_SUBJECT` | `mailto:` do responsável pelo app, exigido pelos serviços de push |
 
 O `.env` existe **só** no servidor. Guarde a senha do banco num gerenciador de senhas.
+
+### Chaves das notificações (spec 011)
+
+```bash
+sudo -u deploy bash /opt/habitsapp/scripts/gerar-vapid.sh
+```
+
+O script imprime duas linhas (`HABITS_VAPID_PUBLIC_KEY=…` e `HABITS_VAPID_PRIVATE_KEY=…`):
+cole-as no `.env` e rode o deploy. Sem elas, o app funciona e a tela da conta mostra as
+notificações como indisponíveis.
+
+- **Nunca troque as chaves depois de publicadas**: toda inscrição de aparelho fica presa à
+  chave pública, e trocar faz todo mundo parar de receber até ativar de novo.
+- A chave privada é um segredo como a senha do banco: só no `.env` do servidor e num
+  gerenciador de senhas.
+- A API precisa de saída HTTPS para os serviços de push (Google, Mozilla, Apple, Microsoft).
 
 ## 4. Primeiro deploy (manual, no servidor)
 
@@ -92,6 +110,17 @@ A partir daí, cada merge na `main` roda [`.github/workflows/deploy.yml`](../.gi
 testes da API e do web → se passarem, `scripts/deploy.sh` no servidor. Se algo falhar, o
 GitHub envia e-mail e a versão anterior continua no ar. Para publicar sem merge: *Actions →
 Testes e publicação → Run workflow*.
+
+### Versão nova e novidades (spec 011)
+
+- Quem estiver com o app aberto vê **"Nova versão disponível"** em até 5 minutos depois do
+  deploy (só depois que a API responde); quem abrir o app ou entrar já recebe a versão nova.
+- O resumo do aviso vem de [`web/novidades.md`](../web/novidades.md): no PR de cada versão,
+  escreva ali em até 300 caracteres o que muda para o usuário (o build falha acima disso). Se o
+  texto não mudar, ele não aparece de novo; para uma versão sem novidades, deixe só o
+  comentário do arquivo.
+- O Nginx manda o navegador sempre revalidar o `index.html`, o `version.json` e o `sw.js`; os
+  arquivos de `/assets/` têm hash no nome e ficam em cache por um ano.
 
 ---
 

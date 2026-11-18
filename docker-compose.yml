@@ -22,6 +22,10 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       HABITS_COOKIE_SECURE: ${HABITS_COOKIE_SECURE:-false}
+      # Notificações (spec 011): vazias = indisponíveis. Gere com scripts/gerar-vapid.sh
+      HABITS_VAPID_PUBLIC_KEY: ${HABITS_VAPID_PUBLIC_KEY:-}
+      HABITS_VAPID_PRIVATE_KEY: ${HABITS_VAPID_PRIVATE_KEY:-}
+      HABITS_VAPID_SUBJECT: ${HABITS_VAPID_SUBJECT:-mailto:contato@example.com}
     depends_on:
       db:
         condition: service_healthy

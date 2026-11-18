@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, type PointerEvent } from "react";
 import type { Habit } from "../api/types";
+import { block } from "../update/blockers";
 
 interface DragState {
   id: number;
@@ -7,6 +8,8 @@ interface DragState {
   pointerId: number;
   startY: number;
   toIndex: number | null;
+  /** Libera a atualização de versão, bloqueada durante o arraste (spec 011, plan P17). */
+  release: () => void;
 }
 
 /**
@@ -44,8 +47,12 @@ export function useReorder(habits: Habit[], onMove: (id: number, toIndex: number
     event.currentTarget.setPointerCapture(event.pointerId);
     const item = event.currentTarget.closest("li")!;
     item.classList.add("dragging");
-    drag.current = { id: habit.id, item, pointerId: event.pointerId, startY: event.clientY, toIndex: null };
+    drag.current?.release();
+    drag.current = { id: habit.id, item, pointerId: event.pointerId, startY: event.clientY, toIndex: null, release: block() };
   }
+
+  // Lista desmontada no meio do arraste: não deixa a atualização bloqueada para sempre
+  useEffect(() => () => drag.current?.release(), []);
 
   function moveDrag(event: PointerEvent<HTMLUListElement>) {
     const state = drag.current;
@@ -69,6 +76,7 @@ export function useReorder(habits: Habit[], onMove: (id: number, toIndex: number
     const state = drag.current;
     if (!state || event.pointerId !== state.pointerId || !listRef.current) return;
     drag.current = null;
+    state.release();
 
     for (const item of listRef.current.children as HTMLCollectionOf<HTMLElement>) {
       item.classList.remove("dragging", "drop-before", "drop-after");

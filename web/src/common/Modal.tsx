@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { useUpdateBlocker } from "../update/blockers";
 
 interface ModalProps {
   open: boolean;
@@ -15,6 +16,8 @@ interface ModalProps {
 /** <dialog> nativo: foco preso no modal e Esc fecha. O conteúdo só é montado aberto (estado novo a cada abertura). */
 export function Modal({ open, onClose, labelledBy, fallbackFocus, className, slot, children }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Diálogo aberto (todo formulário do app é um diálogo): a versão nova espera ele fechar (spec 011, P17)
+  useUpdateBlocker(open);
 
   useEffect(() => {
     const dialog = ref.current;
