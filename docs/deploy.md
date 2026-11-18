@@ -95,6 +95,24 @@ Testes e publicação → Run workflow*.
 
 ---
 
+## Instalar no celular (spec 010)
+
+O Habits pode ser instalado na tela inicial e abre em tela cheia, sem a barra do navegador:
+
+- **iPhone (Safari)**: abra o endereço, toque em *Compartilhar* → *Adicionar à Tela de Início*.
+- **Android (Chrome)**: abra o endereço, toque em *⋮* → *Instalar app* (ou *Adicionar à tela
+  inicial*).
+
+Observações:
+
+- Quem criou o atalho **antes** da spec 010 precisa removê-lo e adicioná-lo de novo para abrir
+  em tela cheia.
+- No iPhone, o app da tela inicial guarda o login separado do Safari: na primeira vez que for
+  aberto pelo atalho, é preciso entrar de novo. Depois disso, o login vale por 7 dias desde a
+  entrada, mesmo fechando o app.
+
+---
+
 ## Operação do dia a dia
 
 ```bash

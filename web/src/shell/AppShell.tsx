@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ApiError, api } from "@/api/client";
-import type { Habit, User, WeekMode } from "@/api/types";
+import { api } from "@/api/client";
+import type { Habit, User } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { Alert } from "@/components/ui/alert";
 import { ChangePasswordDialog } from "@/auth/ChangePasswordDialog";
@@ -21,7 +21,7 @@ type Dialog = { type: "habit"; habit: Habit | null } | { type: "password" } | nu
  * hábitos mora aqui, acima das rotas (plan P9): ir a Arquivados e voltar mantém a semana.
  */
 export function AppShell({ user }: { user: User }) {
-  const { updateUser, logout } = useAuth();
+  const { logout } = useAuth();
   const route = useRoute();
   const [today, setToday] = useState(todayKey);
   const [offset, setOffset] = useState(0);
@@ -29,7 +29,8 @@ export function AppShell({ user }: { user: User }) {
   const [message, setMessage] = useState<{ text: string; tone: "success" | "danger" } | null>(null);
   const todayRef = useRef(today);
 
-  const days = useMemo(() => visibleDays(user.weekMode, offset, today), [user.weekMode, offset, today]);
+  // Semana de segunda a domingo; a preferência antiga user.weekMode é ignorada (spec 010, RC-003)
+  const days = useMemo(() => visibleDays(offset, today), [offset, today]);
   const { habits, checks, goals, loaded, error, setError, toggle, move, mutate } = useHabits(days[0], days[6]);
   const active = habits.filter((habit) => !habit.archived);
   const archived = habits.filter((habit) => habit.archived);
@@ -68,15 +69,6 @@ export function AppShell({ user }: { user: User }) {
     document.querySelector<HTMLElement>("#conteudo h1")?.focus();
   }, [route]);
 
-  async function changeMode(mode: WeekMode) {
-    try {
-      updateUser(await api.updateSettings(mode));
-      setOffset(0);
-    } catch (e) {
-      if (!(e instanceof ApiError && e.status === 401)) setMessage({ text: e instanceof ApiError ? e.message : "Erro inesperado.", tone: "danger" });
-    }
-  }
-
   function signOut() {
     logout().finally(() => navigate("/", { replace: true })).catch(() => undefined);
   }
@@ -86,7 +78,8 @@ export function AppShell({ user }: { user: User }) {
   const openPassword = () => setDialog({ type: "password" });
 
   return (
-    <div className="min-h-dvh bg-slate-50 pb-24 text-slate-700 lg:pb-0 lg:pl-64">
+    // Áreas seguras (entalhe, barra de gestos) com viewport-fit=cover; sem efeito onde não há (spec 010, plan P12)
+    <div className="min-h-dvh bg-slate-50 pb-[calc(6rem+env(safe-area-inset-bottom))] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] text-slate-700 lg:pb-0 lg:pl-64">
       <AppNav
         name={user.name}
         email={user.email}
@@ -113,14 +106,12 @@ export function AppShell({ user }: { user: User }) {
             days={days}
             today={today}
             offset={offset}
-            weekMode={user.weekMode}
             habits={active}
             checks={checks}
             goals={goals}
             loaded={loaded}
             onPrevious={() => setOffset((value) => value - 1)}
             onNext={() => setOffset((value) => Math.min(0, value + 1))}
-            onModeChange={changeMode}
             onToggle={toggle}
             onMove={move}
             onEdit={(habit) => setDialog({ type: "habit", habit })}

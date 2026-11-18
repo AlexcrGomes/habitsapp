@@ -24,20 +24,23 @@ class CheckIT extends IntegrationTest {
         return "/api/checks/" + habitId + "/" + day;
     }
 
+    // TODAY = sábado, 31/10/2026: a janela vai da segunda da semana anterior (19/10) até hoje (spec 010, rev. 3)
+    private static final LocalDate PREVIOUS_MONDAY = TODAY.minusDays(12);
+
     @Test
-    void marcaHojeEOsSeisDiasAnteriores() throws Exception {
+    void marcaASemanaAtualEASemanaAnterior() throws Exception {
         Session session = newUser();
         long habit = createHabit(session, "Ler");
 
         perform(session, put(url(habit, TODAY))).andExpect(status().isNoContent());
-        perform(session, put(url(habit, TODAY.minusDays(6)))).andExpect(status().isNoContent());
+        perform(session, put(url(habit, PREVIOUS_MONDAY))).andExpect(status().isNoContent());
         // Idempotente
         perform(session, put(url(habit, TODAY))).andExpect(status().isNoContent());
 
-        perform(session, get("/api/checks").param("from", TODAY.minusDays(6).toString()).param("to", TODAY.toString()))
+        perform(session, get("/api/checks").param("from", PREVIOUS_MONDAY.toString()).param("to", TODAY.toString()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[*].day", contains(TODAY.minusDays(6).toString(), TODAY.toString())))
+            .andExpect(jsonPath("$[*].day", contains(PREVIOUS_MONDAY.toString(), TODAY.toString())))
             .andExpect(jsonPath("$[0].habitId").value(habit));
     }
 
@@ -46,12 +49,13 @@ class CheckIT extends IntegrationTest {
         Session session = newUser();
         long habit = createHabit(session, "Ler");
 
-        perform(session, put(url(habit, TODAY.minusDays(7))))
+        perform(session, put(url(habit, PREVIOUS_MONDAY.minusDays(1))))
             .andExpect(status().isUnprocessableEntity())
-            .andExpect(jsonPath("$.code").value("NOT_EDITABLE"));
+            .andExpect(jsonPath("$.code").value("NOT_EDITABLE"))
+            .andExpect(jsonPath("$.message").value("Só é possível marcar dias da semana atual e da semana anterior."));
         perform(session, put(url(habit, TODAY.plusDays(1))))
             .andExpect(status().isUnprocessableEntity());
-        perform(session, delete(url(habit, TODAY.minusDays(7))))
+        perform(session, delete(url(habit, PREVIOUS_MONDAY.minusDays(1))))
             .andExpect(status().isUnprocessableEntity());
     }
 

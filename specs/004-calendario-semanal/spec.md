@@ -7,6 +7,15 @@
 > **Portada para a [spec 005](../005-contas-e-servidor/spec.md)**: estas regras continuam
 > válidas, agora por conta de usuário, aplicadas pela API e pela interface React.
 > Referências a `script.js` e `localStorage` são históricas.
+>
+> **Modos de semana substituídos pela [spec 010](../010-layout-mobile/spec.md) (revisão 2,
+> 2026-11-17)**: "Últimos 7 dias" e "Dom–Sáb" deram lugar à semana fixa de segunda a domingo,
+> sem escolha.
+>
+> **Registro retroativo substituído pela spec 010 (revisão 3, 2026-11-17)**: em vez de "hoje e
+> os 6 dias anteriores", pode-se marcar a semana anterior inteira e a semana atual de segunda
+> até hoje; o resto fica só para consulta, também no servidor.
+
 **Entrada**: "Sem precisar salvar nada de data, sempre que o usuário abrir o sistema vai estar
 mostrando o dia corrente, mas ele pode registrar hábitos feitos nos dias anteriores."
 

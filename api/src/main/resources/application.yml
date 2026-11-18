@@ -16,6 +16,9 @@ server:
     session:
       timeout: 7d
       cookie:
+        # Persistente por 7 dias desde a entrada: o login sobrevive a fechar o navegador ou o app da
+        # tela inicial (spec 010, RF-014). "Sair" invalida a sessão e devolve o cookie com Max-Age=0.
+        max-age: 7d
         http-only: true
         same-site: lax
         secure: ${HABITS_COOKIE_SECURE:false}

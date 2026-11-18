@@ -58,7 +58,7 @@ public class CheckService {
         }
         if (!window.contains(day)) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "NOT_EDITABLE",
-                "Só é possível marcar hoje e os 6 dias anteriores.");
+                "Só é possível marcar dias da semana atual e da semana anterior.");
         }
     }
 }
