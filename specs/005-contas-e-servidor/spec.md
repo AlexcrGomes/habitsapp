@@ -8,6 +8,10 @@ cada usuário só tenha acesso aos seus hábitos e registros, e ter um banco de 
 persistir esses dados."
 
 > Plano de implementação: [plan.md](./plan.md). Exige a constituição **2.0.0**.
+>
+> **Janela de edição alterada pela [spec 010](../010-layout-mobile/spec.md) (revisão 3,
+> 2026-11-17)**: a regra "hoje e os 6 dias anteriores" citada aqui passou a ser "a semana
+> anterior inteira e a semana atual de segunda até hoje", validada pela API (`NOT_EDITABLE`).
 
 ---
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { cn } from "@/lib/cn";
 import type { Habit } from "../api/types";
 import { checkKey } from "../habits/rules";
-import { formatDay, isEditable, lockReason, weekdayShort } from "./dates";
+import { DayCheck } from "./DayCheck";
+import { formatDay, weekdayShort } from "./dates";
 
 interface WeekGridProps {
   days: string[];
@@ -28,11 +28,14 @@ export function WeekGrid({ days, today, habits, checks, onToggle }: WeekGridProp
         return (
           <div key={day} className={isToday ? "day today flex w-12 shrink-0 flex-col items-center rounded-lg bg-brand-50 sm:w-14" : "day flex w-12 shrink-0 flex-col items-center sm:w-14"}
             aria-current={isToday ? "date" : undefined}>
-            <div className="flex h-14 flex-col items-center justify-center leading-tight">
-              <span className={isToday ? "text-xs font-medium text-brand-700" : "text-xs font-medium text-slate-500"}>
+            {/* Hoje em destaque forte (spec 010, P20): h-11 + my-1.5 = h-14, mantém o alinhamento com a HabitList */}
+            <div className={isToday
+              ? "my-1.5 flex h-11 w-full flex-col items-center justify-center rounded-md bg-brand-600 leading-tight"
+              : "flex h-14 flex-col items-center justify-center leading-tight"}>
+              <span className={isToday ? "text-xs font-medium text-white" : "text-xs font-medium text-slate-500"}>
                 {weekdayShort(day)}
               </span>
-              <span className={isToday ? "text-sm font-semibold tabular-nums text-brand-700" : "text-sm font-semibold tabular-nums text-ink"}>
+              <span className={isToday ? "text-sm font-semibold tabular-nums text-white" : "text-sm font-semibold tabular-nums text-ink"}>
                 {formatDay(day)}
               </span>
             </div>
@@ -41,17 +44,11 @@ export function WeekGrid({ days, today, habits, checks, onToggle }: WeekGridProp
               const checked = checks.has(key);
               return (
                 <div key={habit.id} className="grid h-16 w-full place-items-center border-t border-slate-100">
-                  <input
-                    type="checkbox"
-                    className={cn("habit-check", checked && justChecked === key && "motion-safe:animate-block-in")}
-                    aria-label={`${habit.name} em ${formatDay(day)}${lockReason(day, today)}`}
-                    checked={checked}
-                    disabled={!isEditable(day, today)}
-                    onChange={(event) => {
-                      if (event.target.checked) setJustChecked(key);
-                      onToggle(habit.id, day, event.target.checked);
-                    }}
-                  />
+                  <DayCheck habit={habit} day={day} today={today} checked={checked} animate={justChecked === key}
+                    onChange={(value) => {
+                      if (value) setJustChecked(key);
+                      onToggle(habit.id, day, value);
+                    }} />
                 </div>
               );
             })}

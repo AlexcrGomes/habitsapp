@@ -4,7 +4,7 @@ import { checkKey } from "../habits/rules";
 import { visibleDays } from "../week/dates";
 import { doneCount, habitProgress, summaryLabel, weekSummary } from "./progress";
 
-const days = visibleDays("rolling", 0, "2026-10-31");
+const days = visibleDays(0, "2026-10-31");
 
 function habit(id: number): Habit {
   return { id, name: `Hábito ${id}`, emoji: "", archived: false, goal: null };
@@ -18,6 +18,20 @@ describe("metas semanais", () => {
   it("conta só os dias da semana exibida", () => {
     const checks = new Set([...checksFor(1, 2), checkKey(1, "2026-10-01")]);
     expect(doneCount(1, days, checks)).toBe(2);
+  });
+
+  it("a meta conta só segunda a domingo da semana exibida (spec 010, RF-018)", () => {
+    // days = segunda 26/10 a domingo 01/11
+    expect(days[0]).toBe("2026-10-26");
+    expect(days[6]).toBe("2026-11-01");
+    const checks = new Set([
+      checkKey(1, "2026-10-25"), // domingo da semana anterior: fora
+      checkKey(1, "2026-10-26"), // segunda: conta
+      checkKey(1, "2026-11-01"), // domingo: conta
+      checkKey(1, "2026-11-02"), // segunda seguinte: fora
+    ]);
+    expect(doneCount(1, days, checks)).toBe(2);
+    expect(weekSummary([habit(1)], checks, new Map([[1, 4]]), days)).toEqual({ percent: 50, label: "Dá para melhorar" });
   });
 
   it("progresso da meta é limitado a 100%", () => {

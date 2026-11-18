@@ -1,4 +1,4 @@
-import type { Check, Goal, Habit, User, WeekMode } from "./types";
+import type { Check, Goal, Habit, User } from "./types";
 
 /** Erro da API com código estável e mensagem em pt-BR (contrato em specs/005-contas-e-servidor/plan.md). */
 export class ApiError extends Error {
@@ -83,7 +83,6 @@ export const api = {
   logout: () => request<void>("POST", "/auth/logout"),
   changePassword: (currentPassword: string, newPassword: string) =>
     request<void>("PUT", "/me/password", { currentPassword, newPassword }),
-  updateSettings: (weekMode: WeekMode) => request<User>("PUT", "/me/settings", { weekMode }),
 
   habits: {
     list: () => request<Habit[]>("GET", "/habits"),

@@ -34,6 +34,7 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 007 | [Atualizar dependências vulneráveis](../specs/007-atualizar-dependencias/spec.md) | Implementada |
 | 008 | [Publicação para testes com usuários](../specs/008-publicacao-gratuita/spec.md) | Aprovada (revisão 3: servidor compartilhado na AWS) |
 | 009 | [Novo design system (azul, tema claro) e nova logo](../specs/009-novo-design-system/spec.md) | Implementada |
+| 010 | [Layout mobile: semana inteira na tela e app em tela cheia](../specs/010-layout-mobile/spec.md) | Aprovada (rev. 3) — implementada e verificada localmente; falta verificar no celular real após o deploy |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
 >

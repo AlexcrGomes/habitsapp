@@ -1,12 +1,9 @@
-import type { WeekMode } from "../api/types";
-
 /**
  * Datas como chave "YYYY-MM-DD". A aritmética é feita em UTC, para não depender do fuso da
  * máquina; o "hoje" segue o horário de Brasília, igual à API (spec 005, RF-010).
  */
 
 export const ZONE = "America/Sao_Paulo";
-export const EDITABLE_DAYS = 7; // hoje + 6 dias anteriores
 
 // en-CA formata como "YYYY-MM-DD"
 const keyFormat = new Intl.DateTimeFormat("en-CA", { timeZone: ZONE, year: "numeric", month: "2-digit", day: "2-digit" });
@@ -31,13 +28,18 @@ export function addDays(key: string, amount: number): string {
   return toKey(date);
 }
 
-/** "rolling" = hoje + 6 anteriores; "calendar" = domingo a sábado. offset em semanas (0 = atual). */
-export function visibleDays(mode: WeekMode, offset: number, today: string): string[] {
-  const start =
-    mode === "calendar"
-      ? addDays(today, -fromKey(today).getUTCDay() + 7 * offset)
-      : addDays(today, 7 * offset - (EDITABLE_DAYS - 1));
+/** Segunda-feira da semana (segunda a domingo) que contém o dia. */
+export function weekStart(day: string): string {
+  const sinceMonday = (fromKey(day).getUTCDay() + 6) % 7; // segunda = 0 … domingo = 6
+  return addDays(day, -sinceMonday);
+}
 
+/**
+ * Semana de segunda a domingo que contém hoje (spec 010, revisão 2: saíram os modos
+ * "Últimos 7 dias" e "Dom–Sáb"). offset em semanas (0 = atual).
+ */
+export function visibleDays(offset: number, today: string): string[] {
+  const start = addDays(weekStart(today), 7 * offset);
   return Array.from({ length: 7 }, (_, index) => addDays(start, index));
 }
 
@@ -45,8 +47,12 @@ export function isFuture(day: string, today: string): boolean {
   return day > today;
 }
 
+/**
+ * Dias que podem ser marcados: da segunda-feira da semana anterior até hoje — a mesma regra
+ * que a API aplica (spec 010, revisão 3).
+ */
 export function isEditable(day: string, today: string): boolean {
-  return day >= addDays(today, -(EDITABLE_DAYS - 1)) && day <= today;
+  return day >= addDays(weekStart(today), -7) && day <= today;
 }
 
 /** Sufixo do rótulo acessível de dias bloqueados. */
