@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "../api/client";
+import { useUpdateBlocker } from "../update/blockers";
 import { MIN_PASSWORD } from "../habits/rules";
 import { useAuth } from "./AuthContext";
 
@@ -16,6 +17,8 @@ export function RegisterPage({ onLogin }: { onLogin: () => void }) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<Field, string>>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Com algo digitado, a versão nova espera o cadastro (spec 011, RF-017c/RF-018)
+  useUpdateBlocker(Object.values(values).some((value) => value !== ""));
 
   function change(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }));

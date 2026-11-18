@@ -5,7 +5,15 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECPoint;
 import java.time.Clock;
+import java.util.Base64;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +45,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * Base dos testes de integração: PostgreSQL real (Testcontainers) e relógio fixo em
  * sábado, 31/10/2026, meio-dia no horário de Brasília.
  */
-@SpringBootTest
+@SpringBootTest(properties = "habits.notifications.scheduler.enabled=false")
 @AutoConfigureMockMvc
 @Import(IntegrationTest.FixedClockConfig.class)
 public abstract class IntegrationTest {
@@ -56,6 +64,36 @@ public abstract class IntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
+        // Chaves VAPID geradas para os testes (spec 011): as notificações ficam disponíveis
+        registry.add("habits.vapid.public-key", () -> VAPID[0]);
+        registry.add("habits.vapid.private-key", () -> VAPID[1]);
+    }
+
+    /** [pública, privada] em base64url, como as do scripts/gerar-vapid.sh. */
+    private static final String[] VAPID = generateVapidKeys();
+
+    private static String[] generateVapidKeys() {
+        try {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+            generator.initialize(new ECGenParameterSpec("secp256r1"));
+            KeyPair pair = generator.generateKeyPair();
+            ECPoint w = ((ECPublicKey) pair.getPublic()).getW();
+            byte[] publicKey = new byte[65];
+            publicKey[0] = 0x04;
+            copy32(w.getAffineX().toByteArray(), publicKey, 1);
+            copy32(w.getAffineY().toByteArray(), publicKey, 33);
+            byte[] privateKey = new byte[32];
+            copy32(((ECPrivateKey) pair.getPrivate()).getS().toByteArray(), privateKey, 0);
+            Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+            return new String[] {encoder.encodeToString(publicKey), encoder.encodeToString(privateKey)};
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static void copy32(byte[] raw, byte[] out, int offset) {
+        int length = Math.min(raw.length, 32);
+        System.arraycopy(raw, raw.length - length, out, offset + 32 - length, length);
     }
 
     @TestConfiguration
@@ -65,6 +103,12 @@ public abstract class IntegrationTest {
         @Primary
         Clock fixedClock() {
             return Clock.fixed(TODAY.atTime(12, 0).atZone(ClockConfig.ZONE).toInstant(), ClockConfig.ZONE);
+        }
+
+        @Bean
+        @Primary
+        FakePushSender fakePushSender() {
+            return new FakePushSender();
         }
     }
 

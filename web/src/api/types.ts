@@ -26,3 +26,21 @@ export interface Check {
   /** "YYYY-MM-DD" */
   day: string;
 }
+
+/** Preferências de notificação da conta (spec 011). */
+export interface NotificationSettings {
+  /** false sem as chaves do servidor: notificações indisponíveis */
+  available: boolean;
+  /** Chave pública VAPID (base64url) para a inscrição de push */
+  publicKey: string | null;
+  /** "HH:mm", horário de Brasília */
+  reminderTime: string;
+  daily: boolean;
+  atRisk: boolean;
+  summary: boolean;
+}
+
+export interface PushDevice {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+}

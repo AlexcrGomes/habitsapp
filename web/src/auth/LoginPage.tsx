@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "../api/client";
+import { useUpdateBlocker } from "../update/blockers";
 import { useAuth } from "./AuthContext";
 
 export function LoginPage({ onRegister }: { onRegister: () => void }) {
@@ -14,6 +15,8 @@ export function LoginPage({ onRegister }: { onRegister: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Com algo digitado, a versão nova espera a entrada (spec 011, RF-017c/RF-018)
+  useUpdateBlocker(email !== "" || password !== "");
 
   async function submit(event: FormEvent) {
     event.preventDefault();

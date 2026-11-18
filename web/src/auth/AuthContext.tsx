@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError, api, setUnauthenticatedHandler } from "../api/client";
 import type { User } from "../api/types";
+import { disableOnLogout } from "../notifications/push";
 
 type Status = "loading" | "anonymous" | "authenticated";
 
@@ -60,6 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      // Este aparelho deixa de receber as notificações da conta (spec 011, RF-012)
+      await disableOnLogout();
       await api.logout();
     } finally {
       setNotice(null);

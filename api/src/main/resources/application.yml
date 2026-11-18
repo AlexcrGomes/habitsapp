@@ -25,3 +25,16 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+
+habits:
+  # Chaves das notificações (spec 011), geradas por scripts/gerar-vapid.sh e lidas do .env.
+  # Vazias: as notificações aparecem como indisponíveis e o resto do app funciona.
+  vapid:
+    public-key: ${HABITS_VAPID_PUBLIC_KEY:}
+    private-key: ${HABITS_VAPID_PRIVATE_KEY:}
+    # Contato do responsável exigido pelos serviços de push (mailto: ou https:)
+    subject: ${HABITS_VAPID_SUBJECT:mailto:contato@example.com}
+  notifications:
+    scheduler:
+      # Tarefa que envia lembretes a cada minuto; desligada nos testes (chamados direto)
+      enabled: ${HABITS_NOTIFICATIONS_SCHEDULER:true}
