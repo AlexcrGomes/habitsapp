@@ -9,8 +9,8 @@ import { WeekPage } from "./WeekPage";
 
 const today = "2026-10-28"; // quarta-feira
 const habits: Habit[] = [
-  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: 4 },
-  { id: 2, name: "Correr", emoji: "🏃", archived: false, goal: null },
+  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: 4, objective: null },
+  { id: 2, name: "Correr", emoji: "🏃", archived: false, goal: null, objective: null },
 ];
 
 function renderWeek() {
@@ -110,5 +110,17 @@ describe("WeekPage (spec 010)", () => {
     expect(container.querySelector(".days")).not.toBeNull();
     expect(screen.getAllByRole("checkbox")).toHaveLength(14);
     expect(screen.getAllByRole("button", { name: "Editar Ler" })).toHaveLength(1);
+  });
+
+  it("no computador, o objetivo aparece abaixo do nome e descreve o botão de editar (spec 012)", () => {
+    simulateScreen("desktop");
+    render(<WeekPage days={visibleDays(0, today)} today={today} offset={0} loaded checks={new Set()} goals={new Map([[1, 4]])}
+      habits={[{ ...habits[0], objective: "Ler pelo menos 10 páginas" }, habits[1]]}
+      onPrevious={vi.fn()} onNext={vi.fn()} onToggle={vi.fn()} onMove={vi.fn()} onEdit={vi.fn()} />);
+
+    const line = screen.getByTitle("Ler pelo menos 10 páginas");
+    expect(line).toHaveClass("truncate", "text-xs");
+    expect(screen.getByRole("button", { name: "Editar Ler" })).toHaveAccessibleDescription("Objetivo: Ler pelo menos 10 páginas");
+    expect(screen.getByRole("button", { name: "Editar Correr" })).not.toHaveAttribute("aria-describedby");
   });
 });

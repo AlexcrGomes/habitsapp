@@ -36,6 +36,7 @@ constituição ──► spec.md ──► clarificação ──► plan.md ─�
 | 009 | [Novo design system (azul, tema claro) e nova logo](../specs/009-novo-design-system/spec.md) | Implementada |
 | 010 | [Layout mobile: semana inteira na tela e app em tela cheia](../specs/010-layout-mobile/spec.md) | Aprovada (rev. 3) — implementada e verificada localmente; falta verificar no celular real após o deploy |
 | 011 | [Notificações de hábitos e atualização para a versão nova](../specs/011-notificacoes-e-atualizacao/spec.md) | Aprovada — implementada e verificada localmente; falta o push real no Chrome e verificar no celular após o deploy |
+| 012 | [Objetivo do hábito e comemoração ao bater a meta](../specs/012-objetivo-e-comemoracao/spec.md) | Aprovada — implementada; falta parte do checklist manual (reduzir movimento, semana passada, leitor de tela, celular real) |
 
 > Mantenha esta tabela atualizada sempre que criar uma spec ou mudar um status.
 >

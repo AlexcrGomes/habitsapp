@@ -97,10 +97,11 @@ export const api = {
 
   habits: {
     list: () => request<Habit[]>("GET", "/habits"),
-    create: (name: string, emoji: string, goal: number | null) => request<Habit>("POST", "/habits", { name, emoji, goal }),
+    create: (name: string, emoji: string, goal: number | null, objective: string) =>
+      request<Habit>("POST", "/habits", { name, emoji, goal, objective }),
     /** Substitui nome, emoji e meta. */
-    update: (id: number, name: string, emoji: string, goal: number | null) =>
-      request<Habit>("PATCH", `/habits/${id}`, { name, emoji, goal }),
+    update: (id: number, name: string, emoji: string, goal: number | null, objective: string) =>
+      request<Habit>("PATCH", `/habits/${id}`, { name, emoji, goal, objective }),
     archive: (id: number) => request<Habit>("POST", `/habits/${id}/archive`),
     restore: (id: number) => request<Habit>("POST", `/habits/${id}/restore`),
     remove: (id: number) => request<void>("DELETE", `/habits/${id}`),

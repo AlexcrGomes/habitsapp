@@ -61,16 +61,21 @@ export function useHabits(from: string, to: string) {
     };
   }, [from, to, fail]);
 
-  /** Otimista: a marcação aparece na hora e volta atrás se a API recusar. */
-  const toggle = useCallback(async (habitId: number, day: string, checked: boolean) => {
+  /**
+   * Otimista: a marcação aparece na hora e volta atrás se a API recusar. Devolve se foi salva
+   * (spec 012: a comemoração some quando a marcação falha).
+   */
+  const toggle = useCallback(async (habitId: number, day: string, checked: boolean): Promise<boolean> => {
     const key = checkKey(habitId, day);
     setChecks((current) => toggled(current, key, checked));
     try {
       if (checked) await api.checks.mark(habitId, day);
       else await api.checks.unmark(habitId, day);
+      return true;
     } catch (e) {
       setChecks((current) => toggled(current, key, !checked));
       fail(e);
+      return false;
     }
   }, [fail]);
 

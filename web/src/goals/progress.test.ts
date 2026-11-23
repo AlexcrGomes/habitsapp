@@ -7,7 +7,7 @@ import { doneCount, habitProgress, summaryLabel, weekSummary } from "./progress"
 const days = visibleDays(0, "2026-10-31");
 
 function habit(id: number): Habit {
-  return { id, name: `Hábito ${id}`, emoji: "", archived: false, goal: null };
+  return { id, name: `Hábito ${id}`, emoji: "", archived: false, goal: null, objective: null };
 }
 
 function checksFor(habitId: number, count: number): string[] {

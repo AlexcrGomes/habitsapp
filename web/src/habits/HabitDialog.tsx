@@ -7,7 +7,7 @@ import { Select } from "@/components/ui/select";
 import { ApiError } from "../api/client";
 import type { Habit } from "../api/types";
 import { MAX_GOAL, MIN_GOAL } from "../goals/progress";
-import { MAX_NAME, habitNameError } from "./rules";
+import { MAX_NAME, MAX_OBJECTIVE, habitNameError, normalizeObjective } from "./rules";
 
 const GOAL_OPTIONS = Array.from({ length: MAX_GOAL - MIN_GOAL + 1 }, (_, index) => MIN_GOAL + index);
 
@@ -16,8 +16,8 @@ interface HabitDialogProps {
   /** null = criar; hábito = editar */
   habit: Habit | null;
   onClose: () => void;
-  /** goal null = sem meta */
-  onSave: (name: string, emoji: string, goal: number | null) => Promise<void>;
+  /** goal null = sem meta; objective "" = sem objetivo (spec 012) */
+  onSave: (name: string, emoji: string, goal: number | null, objective: string) => Promise<void>;
   onRestore: (habitId: number) => Promise<void>;
   onArchive: (habit: Habit) => Promise<void>;
 }
@@ -35,6 +35,7 @@ function HabitForm({ habit, onClose, onSave, onRestore, onArchive }: HabitDialog
   const [emoji, setEmoji] = useState(habit?.emoji ?? "");
   // "" = sem meta
   const [goal, setGoal] = useState(habit?.goal ? String(habit.goal) : "");
+  const [objective, setObjective] = useState(habit?.objective ?? "");
   const [error, setError] = useState("");
   const [conflictId, setConflictId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,7 +61,7 @@ function HabitForm({ habit, onClose, onSave, onRestore, onArchive }: HabitDialog
       setError(nameError);
       return;
     }
-    void run(() => onSave(name, emoji, goal ? Number(goal) : null));
+    void run(() => onSave(name, emoji, goal ? Number(goal) : null, normalizeObjective(objective)));
   }
 
   function archive() {
@@ -87,6 +88,16 @@ function HabitForm({ habit, onClose, onSave, onRestore, onArchive }: HabitDialog
           <Label htmlFor="habit-emoji">Emoji (opcional)</Label>
           <Input id="habit-emoji" autoComplete="off" placeholder="Ex.: 🧘" value={emoji}
             onChange={(e) => setEmoji(e.target.value)} />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="habit-objective">Objetivo (opcional)</Label>
+          <Input id="habit-objective" maxLength={MAX_OBJECTIVE} autoComplete="off" placeholder="Ex.: ler pelo menos 10 páginas"
+            value={objective} aria-describedby="habit-objective-hint habit-objective-count" onChange={(e) => setObjective(e.target.value)} />
+          <div className="flex justify-between gap-3 text-xs text-slate-500">
+            <small id="habit-objective-hint">O desafio que você se propõe ao marcar o dia.</small>
+            <small id="habit-objective-count" className="shrink-0 tabular-nums">{objective.length}/{MAX_OBJECTIVE}</small>
+          </div>
         </div>
 
         <div className="space-y-1.5">

@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { firstGrapheme, habitNameError, habitSymbol } from "./rules";
+import { firstGrapheme, habitNameError, habitSymbol, normalizeObjective } from "./rules";
 
 describe("regras de hábito", () => {
   it("valida o nome como a API", () => {
     expect(habitNameError("   ")).toBe("Informe o nome do hábito.");
     expect(habitNameError("x".repeat(31))).toBe("O nome pode ter no máximo 30 caracteres.");
     expect(habitNameError("  Ler  ")).toBeNull();
+  });
+
+  it("objetivo sem espaços nas pontas; só espaços = sem objetivo (spec 012)", () => {
+    expect(normalizeObjective("  Ler pelo menos 10 páginas ")).toBe("Ler pelo menos 10 páginas");
+    expect(normalizeObjective("   ")).toBe("");
   });
 
   it("emoji composto conta como um símbolo", () => {

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Habit } from "@/api/types";
 import { ArchivedPage } from "./ArchivedPage";
 
-const correr: Habit = { id: 2, name: "Correr", emoji: "🏃", archived: true, goal: 3 };
+const correr: Habit = { id: 2, name: "Correr", emoji: "🏃", archived: true, goal: 3, objective: null };
 
 function renderPage(props: Partial<Parameters<typeof ArchivedPage>[0]> = {}) {
   const onRestore = vi.fn(async () => {});

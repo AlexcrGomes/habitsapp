@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/api/client";
 import type { Habit, User } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { Alert } from "@/components/ui/alert";
 import { ChangePasswordDialog } from "@/auth/ChangePasswordDialog";
+import { type ActiveCelebration, Celebration } from "@/goals/Celebration";
+import { celebrationFor } from "@/goals/celebrationRules";
 import { HabitDialog } from "@/habits/HabitDialog";
 import { MAX_ACTIVE } from "@/habits/rules";
 import { syncSubscription } from "@/notifications/push";
@@ -37,6 +39,26 @@ export function AppShell({ user }: { user: User }) {
   const active = habits.filter((habit) => !habit.archived);
   const archived = habits.filter((habit) => habit.archived);
   const limitReached = active.length >= MAX_ACTIVE;
+
+  // Comemoração ao bater a meta (spec 012): decidida com as marcações de antes da marcação,
+  // mostrada na hora (a marcação é otimista) e apagada se a API recusar
+  const [celebration, setCelebration] = useState<ActiveCelebration | null>(null);
+  const celebrationId = useRef(0);
+  const closeCelebration = useCallback(() => setCelebration(null), []);
+
+  async function toggleDay(habitId: number, day: string, checked: boolean) {
+    const found = celebrationFor(active, checks, goals, days, habitId, day, checked);
+    let id: number | null = null;
+    if (found) {
+      id = ++celebrationId.current;
+      setCelebration({ ...found, id, lastWeek: offset === -1 });
+    }
+    const saved = await toggle(habitId, day, checked);
+    if (!saved && id !== null) setCelebration((current) => (current?.id === id ? null : current));
+  }
+
+  // Trocar de semana ou de tela apaga a comemoração
+  useEffect(() => setCelebration(null), [offset, route]);
 
   // App aberto na virada da meia-noite: ao voltar para a aba, mostra o novo dia (spec 004)
   useEffect(() => {
@@ -132,7 +154,7 @@ export function AppShell({ user }: { user: User }) {
             loaded={loaded}
             onPrevious={() => setOffset((value) => value - 1)}
             onNext={() => setOffset((value) => Math.min(0, value + 1))}
-            onToggle={toggle}
+            onToggle={(habitId, day, checked) => void toggleDay(habitId, day, checked)}
             onMove={move}
             onEdit={(habit) => setDialog({ type: "habit", habit })}
           />
@@ -151,14 +173,17 @@ export function AppShell({ user }: { user: User }) {
         )}
       </main>
 
+      <Celebration celebration={celebration} onClose={closeCelebration} />
+
       <HabitDialog
         open={dialog?.type === "habit"}
         habit={dialog?.type === "habit" ? dialog.habit : null}
         onClose={closeDialog}
-        onSave={(name, emoji, goal) => {
+        onSave={(name, emoji, goal, objective) => {
           const editing = dialog?.type === "habit" ? dialog.habit : null;
-          return mutate(() =>
-            editing ? api.habits.update(editing.id, name, emoji, goal) : api.habits.create(name, emoji, goal));
+          return mutate(() => editing
+            ? api.habits.update(editing.id, name, emoji, goal, objective)
+            : api.habits.create(name, emoji, goal, objective));
         }}
         onRestore={(habitId) => mutate(() => api.habits.restore(habitId))}
         onArchive={(habit) => mutate(() => api.habits.archive(habit.id))}

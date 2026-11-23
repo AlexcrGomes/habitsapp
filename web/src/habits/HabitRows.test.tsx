@@ -8,8 +8,8 @@ import { checkKey } from "./rules";
 
 const today = "2026-10-28"; // quarta-feira
 const habits: Habit[] = [
-  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: 4 },
-  { id: 2, name: "Correr", emoji: "🏃", archived: false, goal: null },
+  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: 4, objective: null },
+  { id: 2, name: "Correr", emoji: "🏃", archived: false, goal: null, objective: null },
 ];
 
 function renderRows(overrides: Partial<Parameters<typeof HabitRows>[0]> = {}) {
@@ -154,5 +154,72 @@ describe("HabitRows (Semana no celular, spec 010)", () => {
   it("sem hábitos mostra o convite", () => {
     renderRows({ habits: [] });
     expect(screen.getByText("Crie seu primeiro hábito")).toBeInTheDocument();
+  });
+
+  describe("objetivo no celular (spec 012)", () => {
+    const withObjective: Habit[] = [
+      { ...habits[0], objective: "Ler pelo menos 10 páginas" },
+      { ...habits[1], objective: "Pelo menos 5 km" },
+      { id: 3, name: "Meditar", emoji: "", archived: false, goal: null, objective: null },
+    ];
+
+    it("o objetivo não aparece na linha, mas o leitor de tela o ouve", () => {
+      renderRows({ habits: withObjective });
+
+      const ler = screen.getByRole("button", { name: "Ler" });
+      expect(ler).toHaveAccessibleDescription("Objetivo: Ler pelo menos 10 páginas");
+      expect(ler).toHaveAttribute("aria-expanded", "false");
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+    });
+
+    it("tocar abre o balão com o objetivo; Editar abre a edição", async () => {
+      const { props } = renderRows({ habits: withObjective });
+
+      await userEvent.click(screen.getByText("Ler"));
+      expect(props.onEdit).not.toHaveBeenCalled();
+      const popover = document.querySelector<HTMLElement>("[data-objective-popover]")!;
+      expect(within(popover).getByText("Ler pelo menos 10 páginas")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Ler" })).toHaveAttribute("aria-expanded", "true");
+      expect(within(popover).getByRole("button", { name: "Editar" })).toHaveFocus();
+
+      await userEvent.click(within(popover).getByRole("button", { name: "Editar" }));
+      expect(props.onEdit).toHaveBeenCalledWith(withObjective[0]);
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+    });
+
+    it("sem objetivo, tocar abre a edição direto", async () => {
+      const { props } = renderRows({ habits: withObjective });
+
+      await userEvent.click(screen.getByRole("button", { name: "Editar Meditar" }));
+      expect(props.onEdit).toHaveBeenCalledWith(withObjective[2]);
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+    });
+
+    it("Esc fecha e devolve o foco; outro hábito troca o balão; marcar um dia fecha", async () => {
+      const { props } = renderRows({ habits: withObjective });
+
+      await userEvent.click(screen.getByText("Ler"));
+      await userEvent.keyboard("{Escape}");
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+      expect(screen.getByRole("button", { name: "Ler" })).toHaveFocus();
+
+      await userEvent.click(screen.getByText("Ler"));
+      await userEvent.click(screen.getByRole("button", { name: "Correr" }));
+      const popovers = document.querySelectorAll<HTMLElement>("[data-objective-popover]");
+      expect(popovers).toHaveLength(1);
+      expect(within(popovers[0]).getByText("Pelo menos 5 km")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("checkbox", { name: "Ler em 27/10" }));
+      expect(props.onToggle).toHaveBeenCalledWith(1, "2026-10-27", true);
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+    });
+
+    it("tocar de novo no mesmo hábito fecha o balão", async () => {
+      renderRows({ habits: withObjective });
+
+      await userEvent.click(screen.getByText("Ler"));
+      await userEvent.click(screen.getByRole("button", { name: "Ler" }));
+      expect(document.querySelector("[data-objective-popover]")).toBeNull();
+    });
   });
 });
