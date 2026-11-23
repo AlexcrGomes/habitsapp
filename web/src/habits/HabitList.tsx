@@ -41,6 +41,7 @@ export function HabitList({ habits, days, checks, goals, onEdit, onMove }: Habit
               </Button>
             </span>
             <Button variant="ghost" size="icon" className="size-8" data-action="edit" aria-label={`Editar ${habit.name}`} title="Editar"
+              aria-describedby={habit.objective ? `objective-${habit.id}` : undefined}
               onClick={() => onEdit(habit)}>
               <Pencil aria-hidden="true" />
             </Button>

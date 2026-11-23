@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/cn";
 import type { Habit } from "../api/types";
 import { GoalBar } from "../goals/GoalBar";
 import { type Goals, doneCount } from "../goals/progress";
@@ -43,8 +44,14 @@ export function HabitLabel({ habit, days, checks, goals }: GoalProps) {
         aria-hidden="true">
         {habitSymbol(habit)}
       </span>
-      <span className="@container flex min-w-0 flex-1 flex-col gap-1.5">
+      {/* Com objetivo, três linhas em h-16: o espaço entre elas encolhe para manter o alinhamento com a grade (spec 012) */}
+      <span className={cn("@container flex min-w-0 flex-1 flex-col", habit.objective ? "gap-0.5" : "gap-1.5")}>
         <span className="truncate text-sm font-medium text-ink" title={habit.name}>{habit.name}</span>
+        {habit.objective && (
+          <span id={`objective-${habit.id}`} className="truncate text-xs leading-4 text-slate-600" title={habit.objective}>
+            <span className="sr-only">Objetivo: </span>{habit.objective}
+          </span>
+        )}
         {goal !== undefined && (
           <span className="flex items-center gap-2">
             <GoalBar name={habit.name} done={doneCount(habit.id, days, checks)} goal={goal} />

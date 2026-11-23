@@ -4,6 +4,8 @@ import type { Habit } from "../api/types";
 
 export const MAX_ACTIVE = 10;
 export const MAX_NAME = 30;
+/** Spec 012: objetivo do hábito, texto livre e opcional */
+export const MAX_OBJECTIVE = 60;
 export const MIN_PASSWORD = 8;
 
 /** Primeiro símbolo visível, preservando emojis compostos (ex.: 👩‍💻). */
@@ -27,4 +29,9 @@ export function habitNameError(name: string): string | null {
 
 export function checkKey(habitId: number, day: string): string {
   return `${habitId}@${day}`;
+}
+
+/** Objetivo como a API grava: sem espaços nas pontas; "" = sem objetivo (spec 012). */
+export function normalizeObjective(text: string): string {
+  return text.trim();
 }

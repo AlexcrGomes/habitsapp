@@ -3,10 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/App";
 import type { Habit } from "@/api/types";
+import { formatDay, todayKey } from "@/week/dates";
 
 const habits: Habit[] = [
-  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: null },
-  { id: 2, name: "Correr", emoji: "🏃", archived: true, goal: null },
+  { id: 1, name: "Ler", emoji: "📚", archived: false, goal: null, objective: null },
+  { id: 2, name: "Correr", emoji: "🏃", archived: true, goal: null, objective: null },
 ];
 
 /** Sessão válida com um hábito ativo e um arquivado. */
@@ -71,5 +72,52 @@ describe("estrutura da tela logada", () => {
 
     expect(await screen.findByRole("heading", { name: "Semana" })).toBeInTheDocument();
     await waitFor(() => expect(window.location.pathname).toBe("/"));
+  });
+});
+
+describe("comemoração ao bater a meta (spec 012)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** Um hábito ativo com meta de 1 dia; a marcação responde markStatus. */
+  function mockWithGoal(markStatus: number) {
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      if (url === "/api/auth/me") return Response.json({ id: 1, name: "Ana Souza", email: "ana@teste.com", weekMode: "calendar" });
+      if (url === "/api/habits") return Response.json([{ ...habits[0], goal: 1, objective: "Ler pelo menos 10 páginas" }]);
+      if (url.startsWith("/api/goals")) return Response.json([{ habitId: 1, daysPerWeek: 1 }]);
+      if (method === "GET" && url.startsWith("/api/checks")) return Response.json([]);
+      if (method === "PUT" && url.startsWith("/api/checks")) return new Response(null, { status: markStatus });
+      return new Response(null, { status: 404 });
+    }));
+  }
+
+  const todayBox = () => screen.getByRole("checkbox", { name: `Ler em ${formatDay(todayKey())}` });
+
+  it("marcar o dia que bate a única meta mostra a semana perfeita; desmarcar não comemora", async () => {
+    window.history.replaceState(null, "", "/");
+    mockWithGoal(204);
+    render(<App />);
+    await screen.findByText("Ler");
+    expect(screen.getAllByRole("status").some((el) => el.dataset.celebration)).toBe(false);
+
+    await userEvent.click(todayBox());
+
+    const celebration = document.querySelector<HTMLElement>("[data-celebration]")!;
+    expect(celebration).toHaveTextContent("Semana perfeita!");
+    expect(celebration).toHaveTextContent("Você bateu todas as metas da semana.");
+    // O foco continua no campo marcado
+    expect(todayBox()).toHaveFocus();
+  });
+
+  it("se a API recusar a marcação, a comemoração some", async () => {
+    window.history.replaceState(null, "", "/");
+    mockWithGoal(500);
+    render(<App />);
+    await screen.findByText("Ler");
+
+    await userEvent.click(todayBox());
+
+    await waitFor(() => expect(todayBox()).not.toBeChecked());
+    expect(document.querySelector("[data-celebration]")).toBeNull();
   });
 });

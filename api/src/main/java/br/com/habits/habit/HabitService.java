@@ -19,6 +19,7 @@ public class HabitService {
 
     public static final int MAX_ACTIVE = 10;
     public static final int MAX_NAME = 30;
+    public static final int MAX_OBJECTIVE = 60;
     private static final int MAX_EMOJI = 32;
 
     private final HabitRepository habits;
@@ -35,24 +36,36 @@ public class HabitService {
     }
 
     @Transactional
-    public Habit create(Long userId, String name, String emoji, Integer goal) {
+    public Habit create(Long userId, String name, String emoji, Integer goal, String objective) {
         String validName = validateName(userId, name, null);
         GoalService.validate(goal);
+        String validObjective = validateObjective(objective);
         if (habits.countByUserIdAndArchivedFalse(userId) >= MAX_ACTIVE) {
             throw limitReached();
         }
-        Habit habit = habits.save(new Habit(userId, validName, firstGrapheme(emoji), habits.maxActivePosition(userId) + 1));
+        Habit habit = new Habit(userId, validName, firstGrapheme(emoji), habits.maxActivePosition(userId) + 1);
+        habit.setObjective(validObjective);
+        habit = habits.save(habit);
         goals.set(habit.getId(), goal);
         return habit;
     }
 
-    /** Substitui nome, emoji e meta (spec 006: a meta nova vale a partir de hoje). */
+    /**
+     * Substitui nome, emoji e meta (spec 006: a meta nova vale a partir de hoje). O objetivo só é
+     * substituído quando keepObjective é falso: um cliente antigo, que não conhece o campo, não o
+     * apaga (spec 012, plan P3).
+     */
     @Transactional
-    public Habit update(Long userId, Long id, String name, String emoji, Integer goal) {
+    public Habit update(Long userId, Long id, String name, String emoji, Integer goal,
+                        boolean keepObjective, String objective) {
         Habit habit = find(userId, id);
-        habit.setName(validateName(userId, name, id));
+        String validName = validateName(userId, name, id);
+        GoalService.validate(goal);
+        String validObjective = keepObjective ? habit.getObjective() : validateObjective(objective);
+        habit.setName(validName);
         habit.setEmoji(firstGrapheme(emoji));
-        goals.set(habit.getId(), GoalService.validate(goal));
+        habit.setObjective(validObjective);
+        goals.set(habit.getId(), goal);
         return habit;
     }
 
@@ -135,6 +148,18 @@ public class HabitService {
                     existing.getId());
             });
 
+        return trimmed;
+    }
+
+    /** Spec 012: sem espaços nas pontas; vazio = sem objetivo (nulo); até 60 caracteres. */
+    static String validateObjective(String objective) {
+        String trimmed = objective == null ? "" : objective.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (trimmed.length() > MAX_OBJECTIVE) {
+            throw ApiException.validation("objective", "O objetivo deve ter no máximo " + MAX_OBJECTIVE + " caracteres.");
+        }
         return trimmed;
     }
 

@@ -2,6 +2,7 @@ package br.com.habits.habit;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -29,6 +30,61 @@ class HabitIT extends IntegrationTest {
             .andExpect(jsonPath("$.name").value("Programar"))
             .andExpect(jsonPath("$.emoji").value("👩‍💻"))
             .andExpect(jsonPath("$.archived").value(false));
+    }
+
+    /** Spec 012, US1: objetivo opcional, aparado, até 60 caracteres; PATCH sem o campo mantém. */
+    @Test
+    void objetivoOpcionalAparadoEMantidoQuandoAusente() throws Exception {
+        Session session = newUser();
+
+        long ler = body(perform(session, post("/api/habits"),
+                Map.of("name", "Ler", "emoji", "", "objective", "  Ler pelo menos 10 páginas  "))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.objective").value("Ler pelo menos 10 páginas"))
+            .andReturn()).get("id").asLong();
+        perform(session, post("/api/habits"), Map.of("name", "Correr", "emoji", "", "objective", "   "))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.objective").value(nullValue()));
+        perform(session, post("/api/habits"), Map.of("name", "Meditar", "emoji", ""))
+            .andExpect(jsonPath("$.objective").value(nullValue()));
+
+        // Sem o campo (cliente antigo): mantém
+        perform(session, patch("/api/habits/" + ler), Map.of("name", "Ler", "emoji", "📚"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.objective").value("Ler pelo menos 10 páginas"));
+        // Presente: substitui
+        perform(session, patch("/api/habits/" + ler), Map.of("name", "Ler", "emoji", "", "objective", "Ler 20 páginas"))
+            .andExpect(jsonPath("$.objective").value("Ler 20 páginas"));
+
+        // Arquivar e restaurar mantém
+        perform(session, post("/api/habits/" + ler + "/archive")).andExpect(jsonPath("$.objective").value("Ler 20 páginas"));
+        perform(session, post("/api/habits/" + ler + "/restore")).andExpect(jsonPath("$.objective").value("Ler 20 páginas"));
+        perform(session, get("/api/habits")).andExpect(jsonPath("$[?(@.name == 'Ler')].objective", contains("Ler 20 páginas")));
+
+        // "" e null explícito removem
+        perform(session, patch("/api/habits/" + ler), Map.of("name", "Ler", "emoji", "", "objective", ""))
+            .andExpect(jsonPath("$.objective").value(nullValue()));
+        perform(session, patch("/api/habits/" + ler), Map.of("name", "Ler", "emoji", "", "objective", "Voltou"))
+            .andExpect(jsonPath("$.objective").value("Voltou"));
+        java.util.Map<String, Object> semObjetivo = new java.util.HashMap<>(Map.of("name", "Ler", "emoji", ""));
+        semObjetivo.put("objective", null);
+        perform(session, patch("/api/habits/" + ler), semObjetivo)
+            .andExpect(jsonPath("$.objective").value(nullValue()));
+    }
+
+    @Test
+    void validaTamanhoDoObjetivo() throws Exception {
+        Session session = newUser();
+
+        perform(session, post("/api/habits"), Map.of("name", "Ler", "emoji", "", "objective", "x".repeat(60)))
+            .andExpect(status().isCreated());
+        perform(session, post("/api/habits"), Map.of("name", "Correr", "emoji", "", "objective", "x".repeat(61)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION"))
+            .andExpect(jsonPath("$.fields.objective").value("O objetivo deve ter no máximo 60 caracteres."))
+            .andExpect(jsonPath("$.message").value("O objetivo deve ter no máximo 60 caracteres."));
+        // Nada foi criado com o objetivo inválido
+        perform(session, get("/api/habits")).andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test

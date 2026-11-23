@@ -24,6 +24,9 @@ public class Habit {
 
     private String emoji;
 
+    /** Spec 012: texto livre do que conta como cumprir o hábito; nulo = sem objetivo. */
+    private String objective;
+
     private boolean archived;
 
     @Column(name = "sort_order")
@@ -64,6 +67,14 @@ public class Habit {
 
     public void setEmoji(String emoji) {
         this.emoji = emoji;
+    }
+
+    public String getObjective() {
+        return objective;
+    }
+
+    public void setObjective(String objective) {
+        this.objective = objective;
     }
 
     public boolean isArchived() {

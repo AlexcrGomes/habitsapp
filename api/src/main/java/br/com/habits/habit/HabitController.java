@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import br.com.habits.auth.AuthPrincipal;
+import br.com.habits.common.ApiException;
 import br.com.habits.goal.GoalService;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -34,18 +37,37 @@ public class HabitController {
         this.goalService = goalService;
     }
 
-    /** Validados no serviço, para devolver os códigos de erro das specs 002 e 006. goal nulo = sem meta. */
-    public record HabitRequest(String name, String emoji, Integer goal) {
+    /**
+     * Validados no serviço, para devolver os códigos de erro das specs 002, 006 e 012. goal nulo = sem
+     * meta. objective é JsonNode para distinguir o campo ausente (Java null: mantém, no PATCH) do
+     * null explícito (NullNode: remove), como pede o plan P3 da spec 012.
+     */
+    public record HabitRequest(String name, String emoji, Integer goal, JsonNode objective) {
+
+        boolean objectiveMissing() {
+            return objective == null || objective.isMissingNode();
+        }
+
+        String objectiveText() {
+            if (objectiveMissing() || objective.isNull()) {
+                return null;
+            }
+            if (!objective.isTextual()) {
+                throw ApiException.validation("objective", "Objetivo inválido.");
+            }
+            return objective.textValue();
+        }
     }
 
     public record OrderRequest(@NotNull(message = "Informe a ordem dos hábitos.") List<Long> ids) {
     }
 
     /** goal = meta vigente hoje, ou nulo. */
-    public record HabitResponse(Long id, String name, String emoji, boolean archived, Integer goal) {
+    public record HabitResponse(Long id, String name, String emoji, boolean archived, Integer goal, String objective) {
 
         static HabitResponse of(Habit habit, Integer goal) {
-            return new HabitResponse(habit.getId(), habit.getName(), habit.getEmoji(), habit.isArchived(), goal);
+            return new HabitResponse(habit.getId(), habit.getName(), habit.getEmoji(), habit.isArchived(), goal,
+                habit.getObjective());
         }
     }
 
@@ -57,13 +79,14 @@ public class HabitController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public HabitResponse create(@AuthenticationPrincipal AuthPrincipal principal, @RequestBody HabitRequest body) {
-        return HabitResponse.of(habitService.create(principal.id(), body.name(), body.emoji(), body.goal()), body.goal());
+        return HabitResponse.of(habitService.create(principal.id(), body.name(), body.emoji(), body.goal(), body.objectiveText()), body.goal());
     }
 
     @PatchMapping("/{id}")
     public HabitResponse update(@AuthenticationPrincipal AuthPrincipal principal, @PathVariable Long id,
                                 @RequestBody HabitRequest body) {
-        return HabitResponse.of(habitService.update(principal.id(), id, body.name(), body.emoji(), body.goal()), body.goal());
+        return HabitResponse.of(habitService.update(principal.id(), id, body.name(), body.emoji(), body.goal(),
+            body.objectiveMissing(), body.objectiveText()), body.goal());
     }
 
     @PostMapping("/{id}/archive")

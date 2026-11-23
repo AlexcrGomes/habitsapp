@@ -53,6 +53,21 @@
     from { opacity: 0; transform: translateY(4px) scale(0.98); }
     to { opacity: 1; transform: none; }
   }
+
+  /* Comemoração ao bater a meta (spec 012): só translação, giro e escala — nada pisca */
+  --animate-confetti-fall: confetti-fall 1.6s cubic-bezier(0.3, 0.6, 0.5, 1) forwards;
+  --animate-celebrate-in: celebrate-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes confetti-fall {
+    0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translate3d(var(--confetti-drift, 0), 70vh, 0) rotate(var(--confetti-spin, 540deg)); opacity: 0; }
+  }
+
+  @keyframes celebrate-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.9); }
+    to { opacity: 1; transform: none; }
+  }
 }
 
 @layer components {

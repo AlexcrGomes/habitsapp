@@ -8,8 +8,8 @@ import { WeekSummary } from "./WeekSummary";
 
 const today = "2026-10-28"; // quarta-feira
 const habits: Habit[] = [
-  { id: 1, name: "Correr", emoji: "🏃", archived: false, goal: 4 },
-  { id: 2, name: "Ler", emoji: "📚", archived: false, goal: null },
+  { id: 1, name: "Correr", emoji: "🏃", archived: false, goal: 4, objective: null },
+  { id: 2, name: "Ler", emoji: "📚", archived: false, goal: null, objective: null },
 ];
 
 describe("WeekSummary", () => {

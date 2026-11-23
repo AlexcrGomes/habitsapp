@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { Habit } from "../api/types";
@@ -8,6 +8,7 @@ import { type Goals, doneCount } from "../goals/progress";
 import { DayCheck } from "../week/DayCheck";
 import { HABIT_COLUMN, WEEK_ROW_GRID } from "../week/DayStrip";
 import { GoalBadge } from "./HabitLabel";
+import { ObjectivePopover } from "./ObjectivePopover";
 import { checkKey, habitSymbol } from "./rules";
 import { useReorder } from "./useReorder";
 
@@ -30,6 +31,10 @@ interface HabitRowsProps {
  */
 export function HabitRows({ habits, days, today, checks, goals, onToggle, onEdit, onMove }: HabitRowsProps) {
   const [justChecked, setJustChecked] = useState<string | null>(null);
+  // Spec 012: no máximo um balão de objetivo aberto
+  const [openId, setOpenId] = useState<number | null>(null);
+  const openButton = useRef<HTMLButtonElement | null>(null);
+  const closePopover = useCallback(() => setOpenId(null), []);
   const { listProps, startDrag, moveByButton } = useReorder(habits, onMove);
   const todayIndex = days.indexOf(today);
   const dayWidth = `(100% - ${HABIT_COLUMN}) / 7`;
@@ -46,18 +51,32 @@ export function HabitRows({ habits, days, today, checks, goals, onToggle, onEdit
       <ul className="habits relative" {...listProps}>
         {habits.map((habit, index) => {
           const goal = goals.get(habit.id);
+          const objective = habit.objective;
+          const open = openId === habit.id;
           return (
             <li key={habit.id} className={cn(WEEK_ROW_GRID, "habit relative items-center border-t border-slate-100 py-1.5 first:border-t-0")}
               data-id={habit.id}>
               <div className="flex min-w-0 items-center">
                 <span className="habit-handle grid h-12 w-3 shrink-0 cursor-grab touch-none select-none place-items-center text-slate-400 hover:text-slate-600"
-                  title="Arrastar para reordenar" aria-hidden="true" onPointerDown={(event) => startDrag(event, habit)}>
+                  title="Arrastar para reordenar" aria-hidden="true" onPointerDown={(event) => {
+                    setOpenId(null);
+                    startDrag(event, habit);
+                  }}>
                   <GripVertical className="size-3.5" />
                 </span>
-                {/* Tocar no emoji ou no nome edita (rev. 3); o nome acessível continua "Editar {nome}" */}
-                <button type="button" data-action="edit" aria-label={`Editar ${habit.name}`} title={habit.name}
+                {/* Tocar no emoji ou no nome edita (rev. 3). Com objetivo, abre antes o balão com o objetivo
+                    e o botão "Editar" (spec 012, US2); o leitor de tela ouve o objetivo pela descrição. */}
+                <button type="button" data-action={objective ? "objective" : "edit"} title={habit.name}
+                  ref={open ? openButton : undefined}
+                  aria-label={objective ? habit.name : `Editar ${habit.name}`}
+                  aria-describedby={objective ? `objective-${habit.id}` : undefined}
+                  aria-expanded={objective ? open : undefined}
+                  aria-controls={objective && open ? `objective-popover-${habit.id}` : undefined}
                   className="flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-0.5 rounded-md px-0.5 py-0.5 text-left"
-                  onClick={() => onEdit(habit)}>
+                  onClick={() => {
+                    if (objective) setOpenId(open ? null : habit.id);
+                    else onEdit(habit);
+                  }}>
                   <span className="flex items-center gap-1">
                     <span className="grid size-7 shrink-0 place-items-center rounded-md bg-brand-50 text-base ring-1 ring-inset ring-brand-100"
                       aria-hidden="true">
@@ -67,6 +86,14 @@ export function HabitRows({ habits, days, today, checks, goals, onToggle, onEdit
                   </span>
                   <span className="line-clamp-2 w-full text-xs leading-tight font-medium break-words text-ink">{habit.name}</span>
                 </button>
+                {objective && <span id={`objective-${habit.id}`} className="sr-only">Objetivo: {objective}</span>}
+                {open && (
+                  <ObjectivePopover id={`objective-popover-${habit.id}`} habit={habit} anchor={openButton} onClose={closePopover}
+                    onEdit={() => {
+                      setOpenId(null);
+                      onEdit(habit);
+                    }} />
+                )}
                 {/* A barra fica fora do botão: um botão não expõe ao leitor de tela os papéis de dentro dele */}
                 {goal !== undefined && (
                   <span className="sr-only">
@@ -93,6 +120,7 @@ export function HabitRows({ habits, days, today, checks, goals, onToggle, onEdit
                   <label key={day} data-today={day === today || undefined} className="grid h-11 cursor-pointer place-items-center">
                     <DayCheck habit={habit} day={day} today={today} checked={checks.has(key)} animate={justChecked === key} className="size-7 max-[359px]:size-6"
                       onChange={(value) => {
+                        setOpenId(null);
                         if (value) setJustChecked(key);
                         onToggle(habit.id, day, value);
                       }} />
